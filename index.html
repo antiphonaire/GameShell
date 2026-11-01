@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GAMESHELL // HQ BAC PRO CIEL - Manuel & Evaluation Cyber</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@400;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        soc: {
+                            bg: '#05070a',
+                            card: '#0b0f17',
+                            panel: '#101622',
+                            border: '#1b263b',
+                            green: '#00ff66',
+                            greenGlow: 'rgba(0, 255, 102, 0.15)',
+                            cyan: '#00f0ff',
+                            red: '#ff0055',
+                            yellow: '#ffcc00',
+                            purple: '#a855f7',
+                            text: '#94a3b8'
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
+                        tech: ['"Share Tech Mono"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #05070a;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 255, 102, 0.05) 0%, transparent 75%),
+                linear-gradient(to right, rgba(0, 255, 102, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 255, 102, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 24px 24px;
+        }
+
+        .scanlines::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+            z-index: 999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .glow-matrix { text-shadow: 0 0 8px rgba(0, 255, 102, 0.6), 0 0 20px rgba(0, 255, 102, 0.2); }
+        .glow-cyan { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.2); }
+        .glow-purple { text-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.2); }
+
+        .border-soc {
+            border: 1px solid #1b263b;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .border-soc-glow {
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.08), inset 0 0 15px rgba(0, 255, 102, 0.02);
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #05070a; }
+        ::-webkit-scrollbar-thumb { background: #1b263b; border-radius: 2px; border: 1px solid #00ff66; }
+        ::-webkit-scrollbar-thumb:hover { background: #00ff66; }
+
+        .nav-tab.active {
+            border-bottom: 2px solid #00ff66;
+            color: #00ff66;
+            background: rgba(0, 255, 102, 0.05);
+        }
+    </style>
+</head>
+<body class="scanlines min-h-screen text-slate-300 flex flex-col justify-between selection:bg-soc-green selection:text-black">
+
+    <header class="border-b border-soc-border bg-soc-bg/95 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                
+                <div class="flex items-center gap-3">
+                    <div class="relative flex items-center justify-center w-9 h-9 rounded bg-black border border-soc-green/60">
+                        <i class="fa-solid fa-terminal text-soc-green text-base"></i>
+                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-soc-green animate-ping"></span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg md:text-xl font-extrabold tracking-wider text-white font-tech flex items-center gap-2">
+                            GAMESHELL <span class="text-soc-green glow-matrix">// BAC PRO CIEL</span>
+                        </h1>
+                        <p class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">Serveur d'Apprentissage Linux & Administration Système</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 font-mono text-xs">
+                    <button onclick="switchTab('tab-guide')" id="btn-tab-guide" class="nav-tab active px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-play text-soc-green"></i> <span>Tutoriel & Jeu</span>
+                    </button>
+                    <button onclick="switchTab('tab-memo')" id="btn-tab-memo" class="nav-tab px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-book-bookmark text-soc-cyan"></i> <span>Fiche Mémo Élève</span>
+                    </button>
+                    <button onclick="switchTab('tab-eval')" id="btn-tab-eval" class="nav-tab px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-graduation-cap text-soc-purple"></i> <span>Grille Évaluation</span>
+                    </button>
+                    
+                    <button onclick="toggleAudio()" class="ml-2 bg-soc-card border border-soc-border text-slate-400 p-1.5 rounded hover:text-soc-green">
+                        <i class="fa-solid fa-volume-xmark text-soc-red" id="audio-icon"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow space-y-8 w-full">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: TUTORIEL & LANCEMENT DU JEU        -->
+        <!-- ========================================== -->
+        <div id="tab-guide" class="tab-content space-y-8">
+            
+            <!-- Banner Connexion PuTTY & IP -->
+            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-96 h-96 bg-soc-green/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center relative z-10">
+                    <div class="lg:col-span-1 space-y-3">
+                        <div class="inline-flex items-center gap-2 text-[10px] text-soc-green bg-soc-green/10 border border-soc-green/30 px-2.5 py-0.5 rounded uppercase font-bold tracking-widest">
+                            <i class="fa-solid fa-network-wired"></i> Connexion Salle informatique
+                        </div>
+                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide">
+                            LANCER <span class="text-soc-green glow-matrix">PUTTY & GAMESHELL</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            Ouvrez le logiciel <strong class="text-white">PuTTY</strong> puis renseignez les paramètres de connexion à destination du serveur Linux de la classe.
+                        </p>
+
+                        <div class="bg-black/60 p-3 rounded border border-soc-border text-xs space-y-1.5 font-mono">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Host Name (IP) :</span>
+                                <span class="text-soc-cyan font-bold">192.168.140.104</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Type de connexion :</span>
+                                <span class="text-soc-green font-bold">SSH (Port 22)</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Mot de passe :</span>
+                                <span class="text-soc-yellow font-bold">eleve</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculateur d'identifiant userX -->
+                    <div class="lg:col-span-2 bg-black/80 p-5 rounded-lg border border-soc-border space-y-4 font-mono text-xs">
+                        <h3 class="text-sm font-bold text-soc-cyan flex items-center gap-2 font-tech">
+                            <i class="fa-solid fa-calculator"></i> CALCULATEUR D'IDENTIFIANT VOTRE POSTE (userX)
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-[10px] text-slate-400 block mb-1">Entrez le dernier octet de votre IP (X) :</label>
+                                <input type="number" id="ip-octet" min="1" max="254" value="25" oninput="calculateUserX()" 
+                                       class="w-full bg-soc-panel border border-soc-border rounded px-3 py-1.5 text-soc-green font-bold focus:outline-none focus:border-soc-green text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-slate-400 block mb-1">Votre login PuTTY généré :</label>
+                                <div class="bg-soc-panel border border-soc-cyan/40 text-soc-cyan font-bold px-3 py-1.5 rounded text-sm flex items-center justify-between">
+                                    <span id="userX-result">user25</span>
+                                    <i class="fa-solid fa-user-check text-xs text-soc-cyan"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Analyse explicative de la commande bash gameshell.sh -L fr -->
+                        <div class="bg-soc-panel p-3 rounded border border-soc-border space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400 font-bold">Commande de lancement du jeu :</span>
+                                <button onclick="copyToClipboard('bash gameshell.sh -L fr')" class="text-soc-green hover:underline text-[11px]">
+                                    <i class="fa-regular fa-copy"></i> Copier
+                                </button>
+                            </div>
+                            <div class="bg-black p-2 rounded text-soc-green font-bold text-sm">
+                                <code>bash gameshell.sh -L fr</code>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] pt-1 border-t border-slate-800">
+                                <div><strong class="text-soc-cyan">bash :</strong> Interpréteur de commande</div>
+                                <div><strong class="text-soc-cyan">gameshell.sh :</strong> Script du jeu</div>
+                                <div><strong class="text-soc-cyan">-L :</strong> Option Langue</div>
+                                <div><strong class="text-soc-cyan">fr :</strong> Langue Française</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Commandes GSH obligatoires -->
+                <div class="bg-soc-card border border-soc-border p-5 rounded-xl space-y-3">
+                    <h3 class="text-base font-bold text-soc-green font-tech flex items-center gap-2">
+                        <i class="fa-solid fa-terminal"></i> COMMANDES SPÉCIFIQUES "gsh"
+                    </h3>
+                    <p class="text-xs text-slate-400">Ce sont les seules commandes propres à GameShell pour piloter la progression :</p>
+                    
+                    <div class="space-y-2 text-xs font-mono">
+                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
+                            <div>
+                                <code class="text-soc-cyan font-bold">gsh goal</code>
+                                <p class="text-[11px] text-slate-400">Affiche le texte et l'objectif de la mission courante</p>
+                            </div>
+                            <button onclick="copyToClipboard('gsh goal')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+
+                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
+                            <div>
+                                <code class="text-soc-green font-bold">gsh check</code>
+                                <p class="text-[11px] text-slate-400">Vérifie si la mission est réussie et passe à la suivante</p>
+                            </div>
+                            <button onclick="copyToClipboard('gsh check')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+
+                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
+                            <div>
+                                <code class="text-soc-red font-bold">gsh exit</code>
+                                <p class="text-[11px] text-slate-400">Sauvegarde l'avancement et quitte le jeu proprement</p>
+                            </div>
+                            <button onclick="copyToClipboard('gsh exit')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Procédure de Sauvegarde -->
+                <div class="bg-soc-card border border-soc-border p-5 rounded-xl space-y-3 relative overflow-hidden">
+                    <div class="flex items-center justify-between border-b border-soc-border pb-2">
+                        <h3 class="text-base font-bold text-soc-yellow font-tech flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> REPRISE DE PARTIE (SAUVEGARDE)
+                        </h3>
+                        <span class="text-[10px] text-soc-yellow bg-soc-yellow/10 border border-soc-yellow/30 px-2 py-0.5 rounded font-mono uppercase">Important</span>
+                    </div>
+
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Lorsque vous exécutez la commande <code class="text-soc-red">gsh exit</code>, le jeu génère automatiquement un fichier nommé <strong class="text-white">gameshell-save.sh</strong>.
+                    </p>
+
+                    <div class="bg-black p-3 rounded border border-soc-yellow/30 text-xs font-mono space-y-2">
+                        <p class="text-slate-400">Pour reprendre votre partie la séance suivante, tapez :</p>
+                        <div class="text-soc-yellow font-bold flex justify-between items-center bg-soc-panel p-2 rounded">
+                            <code>bash gameshell-save.sh</code>
+                            <button onclick="copyToClipboard('bash gameshell-save.sh')" class="text-slate-400 hover:text-soc-yellow"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 italic">⚠️ Ne relancez pas gameshell.sh si vous avez déjà une sauvegarde, sinon vous repartirez du début !</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Simulator -->
+            <section class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-base font-bold font-tech text-soc-green flex items-center gap-2 glow-matrix uppercase tracking-wider">
+                        <i class="fa-solid fa-terminal"></i> SIMULATEUR TACTIQUE // TERMINAL SANDBOX
+                    </h3>
+                    <span class="text-[11px] text-slate-500 font-mono">Entraînement direct aux commandes Unix</span>
+                </div>
+
+                <div class="bg-black border border-soc-green/40 rounded-lg p-4 font-mono text-xs shadow-2xl relative">
+                    <div class="flex items-center justify-between border-b border-soc-border pb-2.5 mb-3 text-[11px] text-slate-500">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-soc-red"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-soc-yellow"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-soc-green"></span>
+                            <span class="ml-2 font-bold text-slate-300">userX@gameshell-ciel:~</span>
+                        </div>
+                        <span class="text-[10px] text-soc-cyan">GameShell Virtual Kernel v4.2</span>
+                    </div>
+
+                    <div id="terminal-output" class="space-y-1.5 mb-3 max-h-48 overflow-y-auto text-slate-300 pr-1">
+                        <p class="text-soc-green font-bold">=== GAMESHELL SIMULATOR CIEL OK ===</p>
+                        <p class="text-slate-400">Testez vos commandes ici avant le vrai jeu. Exemple: <code class="text-soc-green">ls</code>, <code class="text-soc-green">pwd</code>, <code class="text-soc-green">gsh goal</code>.</p>
+                    </div>
+
+                    <form id="terminal-form" class="flex items-center gap-2 border-t border-soc-border pt-2 text-xs">
+                        <span class="text-soc-green font-bold flex items-center gap-1">
+                            <span>userX@gameshell:</span><span id="prompt-path" class="text-soc-cyan">~</span><span>$</span>
+                        </span>
+                        <input type="text" id="terminal-input" autocomplete="off" placeholder="Tapez une commande..." 
+                               class="bg-transparent text-slate-100 flex-grow focus:outline-none font-mono caret-soc-green">
+                        <button type="submit" class="bg-soc-green/10 hover:bg-soc-green/20 text-soc-green border border-soc-green/40 px-3 py-1 rounded text-[11px]">
+                            Exécuter
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Guide des 12 premiers niveaux -->
+            <section class="space-y-4">
+                <div class="border-b border-soc-border pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+                    <div>
+                        <h3 class="text-xl font-bold font-tech text-soc-cyan flex items-center gap-2 glow-cyan uppercase tracking-wider">
+                            <i class="fa-solid fa-crosshairs"></i> GUIDE DES MISSIONS DU JEU
+                        </h3>
+                        <p class="text-xs text-slate-400">Objectifs et indices déverrouillables pour démarrer votre progression.</p>
+                    </div>
+
+                    <div class="flex items-center gap-2 text-xs font-mono">
+                        <button onclick="filterLevels('all')" class="lvl-btn active bg-soc-cyan/20 border border-soc-cyan text-soc-cyan px-2.5 py-1 rounded">Tous (12)</button>
+                        <button onclick="filterLevels('base')" class="lvl-btn bg-soc-card border border-soc-border text-slate-400 px-2.5 py-1 rounded">Bases (1-6)</button>
+                        <button onclick="filterLevels('avance')" class="lvl-btn bg-soc-card border border-soc-border text-slate-400 px-2.5 py-1 rounded">Avancés (7-12)</button>
+                    </div>
+                </div>
+
+                <div id="levels-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Javascript Dynamic insertion -->
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: FICHE MÉMO ÉLÈVE & GUIDE RENDU      -->
+        <!-- ========================================== -->
+        <div id="tab-memo" class="tab-content hidden space-y-8">
+            
+            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-soc-border pb-4">
+                    <div>
+                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-book-bookmark text-soc-cyan"></i> FICHE MÉMO ÉLÈVE & SYNTHÈSE COMMANDES
+                        </h2>
+                        <p class="text-xs text-slate-400">Le récapitulatif complet des commandes Unix indispensables pour réussir GameShell et rédiger votre rapport.</p>
+                    </div>
+                    <div class="relative w-full sm:w-64">
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="memo-search" oninput="filterMemoCommands()" placeholder="Rechercher une commande..." 
+                               class="w-full bg-black border border-soc-border rounded pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-soc-cyan">
+                    </div>
+                </div>
+
+                <div id="memo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </section>
+
+            <!-- Guide rédaction du Google Doc / PDF -->
+            <section class="bg-soc-card border border-soc-border p-6 rounded-xl space-y-6">
+                <div class="border-b border-soc-border pb-3">
+                    <h3 class="text-lg font-bold font-tech text-soc-green flex items-center gap-2 uppercase tracking-wider">
+                        <i class="fa-solid fa-file-pdf"></i> METHODOLOGIE : COMMENT RÉDIGER ET RENDRE VOTRE DOCUMENT
+                    </h3>
+                    <p class="text-xs text-slate-400">Suivez rigoureusement ces consignes pour obtenir la note maximale.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs">
+                    
+                    <!-- Etape 1 -->
+                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
+                        <span class="absolute -top-3 left-4 bg-soc-cyan text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 1</span>
+                        <h4 class="font-bold text-white text-sm pt-2">Création du Google Doc</h4>
+                        <p class="text-slate-400">Nommez votre document avec le format exact requis par le professeur :</p>
+                        <div class="bg-soc-panel p-2 rounded border border-soc-cyan/30 text-soc-cyan font-bold text-[11px] flex justify-between items-center">
+                            <span>GameShell + Nom + Prénom + Classe</span>
+                            <button onclick="copyToClipboard('GameShell + Nom + Prénom + Classe')" class="text-slate-400 hover:text-soc-cyan"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 italic">Exemple: GameShell_DUPONT_Jean_1CIEL</p>
+                    </div>
+
+                    <!-- Etape 2 -->
+                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
+                        <span class="absolute -top-3 left-4 bg-soc-green text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 2</span>
+                        <h4 class="font-bold text-white text-sm pt-2">Structure de chaque Mission</h4>
+                        <p class="text-slate-400">Pour chaque niveau complété, vous devez indiquer :</p>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px]">
+                            <li><strong>Numéro de Mission :</strong> ex: Mission 5</li>
+                            <li><strong>Commandes utilisées :</strong> ex: <code class="text-soc-green">cd / rm / ls</code></li>
+                            <li><strong>Explication courte :</strong> Explication en 1 phrase.</li>
+                            <li><strong>Capture d'écran :</strong> Montrant <code class="text-soc-green">gsh check</code> validé.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Etape 3 -->
+                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
+                        <span class="absolute -top-3 left-4 bg-soc-purple text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 3</span>
+                        <h4 class="font-bold text-white text-sm pt-2">Export PDF & Dépôt</h4>
+                        <p class="text-slate-400">Avant la date limite de l'évaluation finale :</p>
+                        <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px]">
+                            <li>Allez dans Google Doc > Fichier > Télécharger > <strong>Document PDF (.pdf)</strong></li>
+                            <li>Déposez le fichier PDF final dans votre devoir <strong>Google Classroom</strong>.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </section>
+
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: GRILLE D'ÉVALUATION ENSEIGNANT      -->
+        <!-- ========================================== -->
+        <div id="tab-eval" class="tab-content hidden space-y-8">
+            
+            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-soc-border pb-4">
+                    <div>
+                        <div class="inline-flex items-center gap-2 text-[10px] text-soc-purple bg-soc-purple/10 border border-soc-purple/30 px-2.5 py-0.5 rounded uppercase font-bold tracking-widest">
+                            <i class="fa-solid fa-graduation-cap"></i> Référentiel BAC PRO CIEL
+                        </div>
+                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide mt-1">
+                            GRILLE D'ÉVALUATION & CALCULATEUR DE NOTE
+                        </h2>
+                        <p class="text-xs text-slate-400">Barème officiel d'évaluation de la progression et de la qualité de la documentation.</p>
+                    </div>
+
+                    <!-- Badge Barème Officiel -->
+                    <div class="bg-black border border-soc-purple/40 p-3 rounded-lg text-xs font-mono space-y-1">
+                        <div class="text-soc-purple font-bold">BARÈME DE NOTATION :</div>
+                        <div class="text-slate-300">• Mission 1 atteinte = <strong class="text-soc-green">01 / 20</strong></div>
+                        <div class="text-slate-300">• Mission 20 atteinte = <strong class="text-soc-green">20 / 20</strong></div>
+                        <div class="text-slate-300">• Mission 40 atteinte = <strong class="text-soc-green">20 / 20 + 20/20 (Bonus)</strong></div>
+                    </div>
+                </div>
+
+                <!-- Calculateur Interactif de Note -->
+                <div class="bg-black/80 p-5 rounded-lg border border-soc-border space-y-4">
+                    <h3 class="text-sm font-bold text-soc-purple font-tech flex items-center gap-2">
+                        <i class="fa-solid fa-sliders"></i> CALCULATEUR SIMULATEUR DE NOTE
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center font-mono">
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-300 block">Dernière mission validée (1 à 40) :</label>
+                            <input type="range" id="sim-mission" min="1" max="40" value="20" oninput="updateScoreCalc()" 
+                                   class="w-full accent-soc-green bg-soc-panel">
+                            <div class="flex justify-between text-xs text-soc-green font-bold">
+                                <span>Mission : <span id="sim-mission-val">20</span></span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-300 block">Qualité du Google Doc / PDF (0 à 5 pts) :</label>
+                            <select id="sim-doc-quality" onchange="updateScoreCalc()" class="w-full bg-soc-panel border border-soc-border rounded px-3 py-1.5 text-xs text-white">
+                                <option value="5">Excellent (Format, Titre, Captures, Explications OK)</option>
+                                <option value="3">Moyen (Quelques explications ou captures manquantes)</option>
+                                <option value="1">Insuffisant (Titre incorrect ou pas de captures)</option>
+                                <option value="0">Non rendu / Mauvais format</option>
+                            </select>
+                        </div>
+
+                        <!-- Résultat calculé -->
+                        <div class="bg-soc-panel p-4 rounded border border-soc-purple/50 text-center space-y-1">
+                            <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Note Estimée / 20</span>
+                            <div id="sim-final-note" class="text-3xl font-extrabold text-soc-green font-tech glow-matrix">20 / 20</div>
+                            <span id="sim-bonus-badge" class="text-[10px] text-soc-yellow font-bold block"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grille détaillée des critères CIEL -->
+                <div class="space-y-3 font-mono text-xs">
+                    <h3 class="text-sm font-bold text-slate-200 font-tech">TABLEAU DÉTAILLÉ DES COMPÉTENCES CIEL ÉVALUÉES</h3>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-soc-border text-left">
+                            <thead>
+                                <tr class="bg-black text-soc-cyan font-bold border-b border-soc-border">
+                                    <th class="p-3 border-r border-soc-border">Compétence CIEL</th>
+                                    <th class="p-3 border-r border-soc-border">Indicateurs de Réussite</th>
+                                    <th class="p-3 border-r border-soc-border">Critères d'Évaluation</th>
+                                    <th class="p-3">Pondération</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-soc-border bg-soc-panel/50">
+                                <tr>
+                                    <td class="p-3 border-r border-soc-border font-bold text-white">C1 : Configuration & Shell</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-300">Exécution exacte des commandes Unix dans l'environnement virtuel.</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-400">Validation systématique des niveaux avec <code class="text-soc-green">gsh check</code>.</td>
+                                    <td class="p-3 font-bold text-soc-green">Barème Progression (1 à 40)</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 border-r border-soc-border font-bold text-white">C2 : Exploitation & Logs</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-300">Utilisation pertinente des outils de recherche (grep, find, redirection).</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-400">Capacité à isoler les éléments demandés sans aide extérieure.</td>
+                                    <td class="p-3 font-bold text-soc-cyan">Compris dans les missions</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3 border-r border-soc-border font-bold text-white">C3 : Documentation Technique</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-300">Rédaction claire du compte-rendu d'intervention sous Google Doc/PDF.</td>
+                                    <td class="p-3 border-r border-soc-border text-slate-400">Respect du nommage <code class="text-soc-yellow">GameShell+Nom+Prénom+Classe</code>, captures d'écran lisibles et explications exactes.</td>
+                                    <td class="p-3 font-bold text-soc-yellow">Ajustement Qualité (+/- 3 pts)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+    <footer class="border-t border-soc-border bg-black py-6 mt-12 text-center text-xs text-slate-500 font-mono">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <div class="flex justify-center items-center gap-4 text-slate-400 flex-wrap">
+                <span><i class="fa-solid fa-server text-soc-green mr-1"></i> SERVEUR: 192.168.140.104</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-graduation-cap text-soc-cyan mr-1"></i> BAC PRO CIEL</span>
+                <span>•</span>
+                <span><i class="fa-solid fa-shield-halved text-soc-purple mr-1"></i> GAMESHELL ACADEMY</span>
+            </div>
+            <p class="text-slate-600">Application pédagogique conçue pour l'apprentissage du Shell Unix et la cybersécurité en BAC Pro CIEL.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Web Audio SFX
+        let audioEnabled = false;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!audioEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.05);
+                } else if (type === 'unlock') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch (e) { console.log(e); }
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('audio-icon');
+            if (audioEnabled) {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                icon.className = "fa-solid fa-volume-high text-soc-green";
+                playSound('unlock');
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-soc-red";
+            }
+        }
+
+        // Tab Navigation
+        function switchTab(tabId) {
+            playSound('click');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            if (tabId === 'tab-guide') document.getElementById('btn-tab-guide').classList.add('active');
+            if (tabId === 'tab-memo') document.getElementById('btn-tab-memo').classList.add('active');
+            if (tabId === 'tab-eval') document.getElementById('btn-tab-eval').classList.add('active');
+        }
+
+        // IP / UserX calculation
+        function calculateUserX() {
+            const input = document.getElementById('ip-octet').value.trim();
+            const val = input ? parseInt(input) : 25;
+            document.getElementById('userX-result').textContent = `user${val}`;
+        }
+
+        // Data: 12 Levels
+        const levels = [
+            { id: 1, title: "Niveau 1 : Reconnaissance initiale", category: "base", cmd: ["pwd", "ls"], target: "Savoir se situer et repérer les fichiers.", ind1: "Utilisez 'pwd' pour connaître le chemin courant.", ind2: "Faites 'ls' pour afficher le contenu.", solution: "pwd && ls", cielNote: "Validation de votre position de travail sous Linux." },
+            { id: 2, title: "Niveau 2 : Navigation", category: "base", cmd: ["cd", "ls"], target: "Entrer dans un répertoire de mission.", ind1: "Tapez 'cd' suivi du nom exact du dossier.", ind2: "Utilisez 'cd ..' pour reculer.", solution: "cd chateau && ls", cielNote: "~ désigne votre répertoire /home/userX." },
+            { id: 3, title: "Niveau 3 : Lecture de documents", category: "base", cmd: ["cat"], target: "Extraire le contenu d'un fichier texte.", ind1: "La commande 'cat' affiche tout le contenu.", ind2: "Exemple : 'cat parchemin.txt'.", solution: "cat ordre_de_mission.txt", cielNote: "Indispensable pour lire la configuration des fichiers système." },
+            { id: 4, title: "Niveau 4 : Création de répertoires", category: "base", cmd: ["mkdir"], target: "Créer un dossier de stockage.", ind1: "Pour créer un dossier: 'mkdir nom_dossier'.", ind2: "Vérifiez avec 'ls'.", solution: "mkdir coffre", cielNote: "Organisation de l'arborescence du serveur." },
+            { id: 5, title: "Niveau 5 : Suppression & Nettoyage", category: "base", cmd: ["rm"], target: "Eliminer un fichier piégé.", ind1: "Pour supprimer un fichier: 'rm piège.txt'.", ind2: "Attention : suppression définitive sous Linux !", solution: "rm piège.txt", cielNote: "Maintenance et purge des fichiers temporaires." },
+            { id: 6, title: "Niveau 6 : Duplication et Déplacement", category: "base", cmd: ["cp", "mv"], target: "Copier ou déplacer un élément.", ind1: "Copier : 'cp origine destination'.", ind2: "Déplacer / renommer : 'mv ancien nouveau'.", solution: "cp clef.txt coffre/", cielNote: "Toujours faire un backup d'un fichier avant modification." },
+            { id: 7, title: "Niveau 7 : Fichiers Cachés", category: "avance", cmd: ["ls -a"], target: "Débusquer les répertoires cachés.", ind1: "Les fichiers cachés commencent par un point (ex: .flag).", ind2: "Utilisez 'ls -a'.", solution: "ls -a", cielNote: "Les fichiers de conf utilisateur (ex: .bashrc) sont cachés." },
+            { id: 8, title: "Niveau 8 : Permissions & Execution", category: "avance", cmd: ["chmod"], target: "Rendre un script exécutable.", ind1: "Affichez les droits avec 'ls -l'.", ind2: "Donnez les droits d'exécution avec 'chmod +x script.sh'.", solution: "chmod +x script.sh && ./script.sh", cielNote: "Notion fondamentale de privilèges Linux (rwx)." },
+            { id: 9, title: "Niveau 9 : Filtrage de texte & LOGS", category: "avance", cmd: ["grep"], target: "Isoler un mot-clé dans un fichier.", ind1: "Utilisez 'grep \"mot\" fichier.txt'.", ind2: "L'option -i ignore les majuscules/minuscules.", solution: "grep \"PASSWORD\" journal.log", cielNote: "Utilisé quotidiennement pour analyser les logs d'attaque." },
+            { id: 10, title: "Niveau 10 : Localisation Système", category: "avance", cmd: ["find"], target: "Retrouver un fichier perdu.", ind1: "Tapez 'find . -name \"nom_fichier\"'.", ind2: "Le point '.' indique le répertoire courant.", solution: "find . -name \"flag.txt\"", cielNote: "Retrouver des exécutables disséminés sur le disque." },
+            { id: 11, title: "Niveau 11 : Édition de scripts Bash", category: "avance", cmd: ["nano"], target: "Modifier un fichier de configuration.", ind1: "Ouvrez le fichier avec 'nano script.sh'.", ind2: "Sauvegarder : Ctrl+O puis Entrée. Quitter : Ctrl+X.", solution: "nano script.sh", cielNote: "Éditeur texte indispensable lors d'une session SSH distante." },
+            { id: 12, title: "Niveau 12 : Redirection et Pipes", category: "avance", cmd: [">", "|"], target: "Chainer les commandes Unix.", ind1: "Le symbole '>' redirige vers un fichier.", ind2: "Le symbole pipe '|' transmet le résultat à la commande suivante.", solution: "cat log.txt | grep \"error\" > rapport.txt", cielNote: "Automation des tâches d'administration réseau." }
+        ];
+
+        // Data: Memo Commands
+        const memoCommands = [
+            { name: "ls", usage: "ls -la", desc: "Lister le contenu d'un répertoire (fichiers cachés inclus)." },
+            { name: "cd", usage: "cd <dossier>", desc: "Se déplacer dans l'arborescence (cd .. pour reculer)." },
+            { name: "pwd", usage: "pwd", desc: "Afficher le chemin absolu du dossier courant." },
+            { name: "cat", usage: "cat <fichier>", desc: "Afficher le contenu texte d'un fichier." },
+            { name: "mkdir", usage: "mkdir <nom>", desc: "Créer un nouveau répertoire." },
+            { name: "rm", usage: "rm <fichier>", desc: "Supprimer définitivement un fichier." },
+            { name: "cp", usage: "cp <source> <dest>", desc: "Copier un fichier ou dossier." },
+            { name: "mv", usage: "mv <source> <dest>", desc: "Déplacer ou renommer un fichier." },
+            { name: "chmod", usage: "chmod +x <script>", desc: "Modifier les autorisations d'un fichier (ex: exécutable)." },
+            { name: "grep", usage: "grep \"texte\" <fichier>", desc: "Rechercher une chaîne spécifique dans un texte/log." },
+            { name: "find", usage: "find . -name \"*.txt\"", desc: "Chercher un fichier par son nom dans les dossiers." },
+            { name: "nano", usage: "nano <fichier>", desc: "Editeur de texte dans le terminal." }
+        ];
+
+        function renderLevels(list = levels) {
+            const container = document.getElementById('levels-grid');
+            container.innerHTML = list.map(lvl => `
+                <div class="bg-soc-card border border-soc-border hover:border-soc-green/40 rounded-lg p-4 space-y-3 transition flex flex-col justify-between">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between border-b border-soc-border pb-2">
+                            <span class="text-xs font-bold text-soc-green font-tech px-2 py-0.5 rounded bg-soc-green/10 border border-soc-green/30">
+                                MIS_${lvl.id < 10 ? '0' + lvl.id : lvl.id}
+                            </span>
+                            <span class="text-[10px] text-slate-500 font-mono uppercase">${lvl.category === 'base' ? 'Bases' : 'Avancé'}</span>
+                        </div>
+                        <h4 class="font-bold text-white text-sm font-tech">${lvl.title}</h4>
+                        <p class="text-xs text-slate-400"><strong>Objectif :</strong> ${lvl.target}</p>
+                        <div class="flex flex-wrap gap-1 pt-1">
+                            ${lvl.cmd.map(c => `<code class="bg-black text-soc-cyan px-1.5 py-0.5 rounded border border-soc-border text-[10px]">${c}</code>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-soc-border space-y-2">
+                        <button onclick="toggleLevelSolution(${lvl.id})" class="w-full bg-soc-panel hover:bg-black text-slate-300 hover:text-soc-green border border-soc-border py-1.5 rounded text-xs transition flex items-center justify-center gap-2 font-mono">
+                            <i class="fa-solid fa-lock text-soc-yellow" id="lock-icon-${lvl.id}"></i>
+                            <span id="btn-lvl-${lvl.id}">VOIR L'INDICE</span>
+                        </button>
+
+                        <div id="sol-box-${lvl.id}" class="hidden bg-black p-3 rounded border border-soc-green/30 text-xs space-y-2 font-mono">
+                            <div><span class="text-soc-yellow font-bold">Indice 1:</span> ${lvl.ind1}</div>
+                            <div><span class="text-soc-yellow font-bold">Indice 2:</span> ${lvl.ind2}</div>
+                            <div class="pt-1 border-t border-slate-800 text-soc-green font-bold flex items-center justify-between">
+                                <span>Solution: <code class="text-white">${lvl.solution}</code></span>
+                                <button onclick="copyToClipboard('${lvl.solution}')" class="text-slate-400 hover:text-soc-green text-[10px]"><i class="fa-regular fa-copy"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleLevelSolution(id) {
+            playSound('unlock');
+            const box = document.getElementById(`sol-box-${id}`);
+            const btn = document.getElementById(`btn-lvl-${id}`);
+            const icon = document.getElementById(`lock-icon-${id}`);
+
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+                btn.textContent = "MASQUER L'INDICE";
+                icon.className = "fa-solid fa-lock-open text-soc-green";
+            } else {
+                box.classList.add('hidden');
+                btn.textContent = "VOIR L'INDICE";
+                icon.className = "fa-solid fa-lock text-soc-yellow";
+            }
+        }
+
+        function filterLevels(cat) {
+            playSound('click');
+            document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('bg-soc-cyan/20', 'border-soc-cyan', 'text-soc-cyan'));
+            event.target.classList.add('bg-soc-cyan/20', 'border-soc-cyan', 'text-soc-cyan');
+
+            if (cat === 'all') renderLevels(levels);
+            else renderLevels(levels.filter(l => l.category === cat));
+        }
+
+        function renderMemoCommands(list = memoCommands) {
+            const container = document.getElementById('memo-grid');
+            container.innerHTML = list.map(c => `
+                <div class="bg-black/60 border border-soc-border p-4 rounded-lg space-y-2 font-mono hover:border-soc-cyan/40 transition">
+                    <div class="flex items-center justify-between border-b border-soc-border pb-2">
+                        <code class="text-base font-bold text-soc-cyan">${c.name}</code>
+                        <button onclick="copyToClipboard('${c.usage}')" class="text-slate-500 hover:text-soc-cyan text-xs">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-300">${c.desc}</p>
+                    <div class="bg-soc-panel p-2 rounded text-xs text-soc-green border border-soc-border">
+                        <code>$ ${c.usage}</code>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterMemoCommands() {
+            const q = document.getElementById('memo-search').value.toLowerCase();
+            renderMemoCommands(memoCommands.filter(c => c.name.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)));
+        }
+
+        function updateScoreCalc() {
+            const mission = parseInt(document.getElementById('sim-mission').value);
+            const docQual = parseInt(document.getElementById('sim-doc-quality').value);
+            document.getElementById('sim-mission-val').textContent = mission;
+
+            // Barème : Mission 1 = 1, Mission 20 = 20, Mission 40 = 20 + 20 Bonus
+            let scoreProg = 0;
+            let bonusText = "";
+
+            if (mission <= 20) {
+                scoreProg = Math.round((mission / 20) * 20);
+            } else {
+                scoreProg = 20;
+                const bonus = Math.round(((mission - 20) / 20) * 20);
+                bonusText = `+ ${bonus} pts de BONUS (Super-Note)`;
+            }
+
+            // Pondération avec la qualité du doc
+            let finalNote = Math.min(20, Math.max(0, scoreProg));
+            
+            document.getElementById('sim-final-note').textContent = `${finalNote} / 20`;
+            document.getElementById('sim-bonus-badge').textContent = bonusText;
+        }
+
+        function copyToClipboard(text) {
+            playSound('click');
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 bg-soc-green text-black px-4 py-2 rounded font-mono font-bold text-xs shadow-2xl z-50 flex items-center gap-2";
+            toast.innerHTML = `<i class="fa-solid fa-check"></i> Copié : ${text}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Terminal Simulator Logic
+        const termOutput = document.getElementById('terminal-output');
+        const termInput = document.getElementById('terminal-input');
+        const termForm = document.getElementById('terminal-form');
+
+        termForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            playSound('click');
+            const raw = termInput.value.trim();
+            if (!raw) return;
+
+            appendTermLine(`userX@gameshell:~$ ${raw}`, "text-soc-cyan font-bold");
+            const cmd = raw.split(' ')[0].toLowerCase();
+
+            if (cmd === 'pwd') appendTermLine("/home/user25", "text-soc-green");
+            else if (cmd === 'ls') appendTermLine("README.txt   chateau   ordre_de_mission.txt", "text-slate-200");
+            else if (cmd === 'gsh') appendTermLine("[OK] Mission courante validée !", "text-soc-green font-bold");
+            else if (cmd === 'help') appendTermLine("Commandes reconnues dans le simulateur: pwd, ls, gsh, clear", "text-slate-400");
+            else if (cmd === 'clear') termOutput.innerHTML = '';
+            else appendTermLine(`bash: command not found: ${cmd}`, "text-soc-red");
+
+            termInput.value = '';
+            termOutput.scrollTop = termOutput.scrollHeight;
+        });
+
+        function appendTermLine(txt, cls = "text-slate-300") {
+            const p = document.createElement('p');
+            p.className = cls;
+            p.textContent = txt;
+            termOutput.appendChild(p);
+        }
+
+        window.onload = function() {
+            renderLevels();
+            renderMemoCommands();
+            updateScoreCalc();
+        };
+    </script>
+</body>
+</html>
