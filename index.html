@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAMESHELL // BAC PRO CIEL - Manuel & Evaluation Cyber</title>
+    <title>GAMESHELL // HQ BAC PRO CIEL - Manuel & Evaluation Cyber</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
@@ -122,7 +122,7 @@
                         <i class="fa-solid fa-graduation-cap text-soc-purple"></i> <span>Grille Évaluation</span>
                     </button>
                     
-                    <button onclick="toggleAudio()" class="ml-2 bg-soc-card border border-soc-border text-slate-400 p-1.5 rounded hover:text-soc-green">
+                    <button onclick="toggleAudio()" title="Activer / Couper l'ambiance sonore & la musique" class="ml-2 bg-soc-card border border-soc-border text-slate-400 p-1.5 rounded hover:text-soc-green transition flex items-center gap-1.5">
                         <i class="fa-solid fa-volume-xmark text-soc-red" id="audio-icon"></i>
                     </button>
                 </div>
@@ -155,9 +155,14 @@
                         </p>
 
                         <div class="bg-black/60 p-3 rounded border border-soc-border text-xs space-y-1.5 font-mono">
-                            <div class="flex justify-between">
+                            <div class="flex justify-between items-center">
                                 <span class="text-slate-400">Host Name (IP) :</span>
-                                <span class="text-soc-cyan font-bold">prociel.cloud</span>
+                                <span class="text-soc-cyan font-bold flex items-center gap-2">
+                                    prociel.cloud
+                                    <button onclick="copyToClipboard('prociel.cloud')" class="text-slate-400 hover:text-soc-cyan text-[11px]" title="Copier l'adresse du serveur">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </span>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-slate-400">Type de connexion :</span>
@@ -193,6 +198,8 @@
 
                         <!-- Analyse explicative de la commande bash gameshell.sh -L fr -->
                         <div class="bg-soc-panel p-3 rounded border border-soc-border space-y-2">
+                        <!-- Analyse explicative de la commande bash gameshell.sh -->
+                        <div class="bg-soc-panel p-3 rounded border border-soc-border space-y-2">
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-400 font-bold">Commande de lancement du jeu :</span>
                                 <button onclick="copyToClipboard('bash gameshell.sh')" class="text-soc-green hover:underline text-[11px]">
@@ -203,10 +210,18 @@
                                 <code>bash gameshell.sh</code>
                             </div>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] pt-1 border-t border-slate-800">
-                                <div><strong class="text-soc-cyan">bash :</strong> Interpréteur de commande</div>
-                                <div><strong class="text-soc-cyan">gameshell.sh :</strong> Script du jeu</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] pt-1 border-t border-slate-800">
+                                <div><strong class="text-soc-cyan">bash :</strong> Interpréteur de commande Linux</div>
+                                <div><strong class="text-soc-cyan">gameshell.sh :</strong> Script exécutable du jeu GameShell</div>
                             </div>
+                        </div>
+
+                        <!-- Commande SSH directe -->
+                        <div class="bg-soc-panel p-3 rounded border border-soc-border flex items-center justify-between">
+                            <span class="text-slate-400">Connexion directe (Terminal / PowerShell) : <code id="ssh-direct-cmd" class="text-soc-cyan font-bold">ssh user25@prociel.cloud</code></span>
+                            <button onclick="copyToClipboard(document.getElementById('ssh-direct-cmd').textContent)" class="text-soc-cyan hover:underline text-[11px]">
+                                <i class="fa-regular fa-copy"></i> Copier
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -216,9 +231,19 @@
                 
                 <!-- Commandes GSH obligatoires -->
                 <div class="bg-soc-card border border-soc-border p-5 rounded-xl space-y-3">
-                    <h3 class="text-base font-bold text-soc-green font-tech flex items-center gap-2">
-                        <i class="fa-solid fa-terminal"></i> COMMANDES SPÉCIFIQUES "gsh"
-                    </h3>
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h3 class="text-base font-bold text-soc-green font-tech flex items-center gap-2">
+                            <i class="fa-solid fa-terminal"></i> COMMANDES SPÉCIFIQUES "gsh"
+                        </h3>
+                        <div class="inline-flex items-center gap-1.5 bg-soc-purple/15 border border-soc-purple/40 px-2.5 py-0.5 rounded-full text-[11px] font-mono">
+                            <i class="fa-solid fa-key text-soc-purple text-[10px]"></i>
+                            <span class="text-slate-300">Mot de passe :</span>
+                            <code class="text-soc-purple font-bold">gsh</code>
+                            <button onclick="copyToClipboard('gsh')" class="text-slate-400 hover:text-soc-purple ml-1" title="Copier le mot de passe gsh">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
                     <p class="text-xs text-slate-400">Ce sont les seules commandes propres à GameShell pour piloter la progression :</p>
                     
                     <div class="space-y-2 text-xs font-mono">
@@ -236,6 +261,28 @@
                                 <p class="text-[11px] text-slate-400">Vérifie si la mission est réussie et passe à la suivante</p>
                             </div>
                             <button onclick="copyToClipboard('gsh check')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+
+                        <div class="bg-black p-2.5 rounded border border-soc-purple/30 flex justify-between items-center">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <code class="text-soc-purple font-bold">gsh goto &lt;niveau&gt;</code>
+                                    <span class="text-[10px] bg-soc-purple/10 text-soc-purple border border-soc-purple/30 px-1.5 py-0.2 rounded">MDP : gsh</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400">Permet d'atteindre directement un niveau précis (ex: <code class="text-slate-300">gsh goto 5</code>)</p>
+                            </div>
+                            <button onclick="copyToClipboard('gsh goto ')" class="text-slate-500 hover:text-soc-purple" title="Copier gsh goto "><i class="fa-regular fa-copy"></i></button>
+                        </div>
+
+                        <div class="bg-black p-2.5 rounded border border-soc-yellow/30 flex justify-between items-center">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <code class="text-soc-yellow font-bold">gsh skip</code>
+                                    <span class="text-[10px] bg-soc-purple/10 text-soc-purple border border-soc-purple/30 px-1.5 py-0.2 rounded">MDP : gsh</span>
+                                </div>
+                                <p class="text-[11px] text-slate-400">Permet de passer la mission actuelle si vous êtes bloqué</p>
+                            </div>
+                            <button onclick="copyToClipboard('gsh skip')" class="text-slate-500 hover:text-soc-yellow" title="Copier gsh skip"><i class="fa-regular fa-copy"></i></button>
                         </div>
 
                         <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
@@ -432,9 +479,9 @@
                     <!-- Badge Barème Officiel -->
                     <div class="bg-black border border-soc-purple/40 p-3 rounded-lg text-xs font-mono space-y-1">
                         <div class="text-soc-purple font-bold">BARÈME DE NOTATION :</div>
-                        <div class="text-slate-300">• Mission 1 atteinte = <strong class="text-soc-green">01 / 20</strong></div>
-                        <div class="text-slate-300">• Mission 20 atteinte = <strong class="text-soc-green">20 / 20</strong></div>
-                        <div class="text-slate-300">• Mission 40 atteinte = <strong class="text-soc-green">20 / 20 + 20/20 (Bonus)</strong></div>
+                        <div class="text-slate-300">• Niveau 1 atteint = <strong class="text-soc-green">00 / 20</strong></div>
+                        <div class="text-slate-300">• Niveau 21 atteint = <strong class="text-soc-green">20 / 20</strong> <span class="text-[10px] text-slate-400">(+1 pt / niveau)</span></div>
+                        <div class="text-slate-300">• Niveau 45 atteint = <strong class="text-soc-green">20 / 20 + 20/20 (2ème 20)</strong></div>
                     </div>
                 </div>
 
@@ -446,11 +493,11 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center font-mono">
                         <div class="space-y-2">
-                            <label class="text-xs text-slate-300 block">Dernière mission validée (1 à 40) :</label>
-                            <input type="range" id="sim-mission" min="1" max="40" value="20" oninput="updateScoreCalc()" 
+                            <label class="text-xs text-slate-300 block">Dernier niveau atteint (1 à 45) :</label>
+                            <input type="range" id="sim-mission" min="1" max="45" value="21" oninput="updateScoreCalc()" 
                                    class="w-full accent-soc-green bg-soc-panel">
                             <div class="flex justify-between text-xs text-soc-green font-bold">
-                                <span>Mission : <span id="sim-mission-val">20</span></span>
+                                <span>Niveau : <span id="sim-mission-val">21</span></span>
                             </div>
                         </div>
 
@@ -492,7 +539,7 @@
                                     <td class="p-3 border-r border-soc-border font-bold text-white">C1 : Configuration & Shell</td>
                                     <td class="p-3 border-r border-soc-border text-slate-300">Exécution exacte des commandes Unix dans l'environnement virtuel.</td>
                                     <td class="p-3 border-r border-soc-border text-slate-400">Validation systématique des niveaux avec <code class="text-soc-green">gsh check</code>.</td>
-                                    <td class="p-3 font-bold text-soc-green">Barème Progression (1 à 40)</td>
+                                    <td class="p-3 font-bold text-soc-green">Barème Progression (Niv. 1 à 45)</td>
                                 </tr>
                                 <tr>
                                     <td class="p-3 border-r border-soc-border font-bold text-white">C2 : Exploitation & Logs</td>
@@ -531,13 +578,26 @@
     </footer>
 
     <script>
-        // Web Audio SFX
+        // Web Audio SFX & Ambient Lo-Fi Cyber Synth
         let audioEnabled = false;
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let audioCtx = null;
+        let musicInterval = null;
+        let masterMusicGain = null;
+        let stepIndex = 0;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
 
         function playSound(type) {
             if (!audioEnabled) return;
             try {
+                initAudioContext();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.connect(gain);
@@ -563,15 +623,141 @@
             } catch (e) { console.log(e); }
         }
 
+        // Générateur de musique d'ambiance Cyber / Synthwave Lo-Fi douce
+        function startAmbientMusic() {
+            try {
+                initAudioContext();
+                if (musicInterval) clearInterval(musicInterval);
+
+                masterMusicGain = audioCtx.createGain();
+                masterMusicGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
+                masterMusicGain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 1.5);
+                masterMusicGain.connect(audioCtx.destination);
+
+                // Progression d'accords mineurs doux (Am9 -> Fmaj7 -> Cmaj9 -> Em7)
+                const chords = [
+                    { bass: 110.00, pad: [220.00, 261.63, 329.63, 493.88], arp: [440.00, 523.25, 659.25, 587.33] }, // Am9
+                    { bass: 87.31,  pad: [174.61, 220.00, 261.63, 329.63], arp: [349.23, 440.00, 523.25, 659.25] }, // Fmaj7
+                    { bass: 130.81, pad: [196.00, 246.94, 293.66, 329.63], arp: [392.00, 493.88, 587.33, 659.25] }, // Cmaj9
+                    { bass: 82.41,  pad: [164.81, 196.00, 246.94, 293.66], arp: [329.63, 392.00, 493.88, 587.33] }  // Em7
+                ];
+
+                stepIndex = 0;
+
+                const playStep = () => {
+                    if (!audioEnabled || !audioCtx || !masterMusicGain) return;
+                    const now = audioCtx.currentTime;
+                    const chord = chords[Math.floor(stepIndex / 8) % chords.length];
+                    const subStep = stepIndex % 8;
+
+                    // 1. Nappe d'accords doux & basse subtile tous les 8 temps (toutes les 4 secondes)
+                    if (subStep === 0) {
+                        // Basse chaude filtrée
+                        const bassOsc = audioCtx.createOscillator();
+                        const bassFilter = audioCtx.createBiquadFilter();
+                        const bassGain = audioCtx.createGain();
+
+                        bassOsc.type = 'triangle';
+                        bassOsc.frequency.setValueAtTime(chord.bass, now);
+
+                        bassFilter.type = 'lowpass';
+                        bassFilter.frequency.setValueAtTime(220, now);
+
+                        bassGain.gain.setValueAtTime(0.001, now);
+                        bassGain.gain.linearRampToValueAtTime(0.28, now + 0.6);
+                        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 4.2);
+
+                        bassOsc.connect(bassFilter);
+                        bassFilter.connect(bassGain);
+                        bassGain.connect(masterMusicGain);
+
+                        bassOsc.start(now);
+                        bassOsc.stop(now + 4.3);
+
+                        // Nappe synthétique douce (Pad)
+                        chord.pad.forEach((freq) => {
+                            const padOsc = audioCtx.createOscillator();
+                            const padFilter = audioCtx.createBiquadFilter();
+                            const padGain = audioCtx.createGain();
+
+                            padOsc.type = 'sine';
+                            padOsc.frequency.setValueAtTime(freq, now);
+
+                            padFilter.type = 'lowpass';
+                            padFilter.frequency.setValueAtTime(650, now);
+
+                            padGain.gain.setValueAtTime(0.001, now);
+                            padGain.gain.linearRampToValueAtTime(0.06, now + 1.0);
+                            padGain.gain.exponentialRampToValueAtTime(0.001, now + 4.3);
+
+                            padOsc.connect(padFilter);
+                            padFilter.connect(padGain);
+                            padGain.connect(masterMusicGain);
+
+                            padOsc.start(now);
+                            padOsc.stop(now + 4.4);
+                        });
+                    }
+
+                    // 2. Arpège léger cristallin lo-fi à chaque pas (0.5s)
+                    const arpFreq = chord.arp[subStep % chord.arp.length];
+                    const arpOsc = audioCtx.createOscillator();
+                    const arpFilter = audioCtx.createBiquadFilter();
+                    const arpGain = audioCtx.createGain();
+
+                    arpOsc.type = 'sine';
+                    arpOsc.frequency.setValueAtTime(arpFreq, now);
+
+                    arpFilter.type = 'lowpass';
+                    arpFilter.frequency.setValueAtTime(1100, now);
+
+                    arpGain.gain.setValueAtTime(0.001, now);
+                    arpGain.gain.linearRampToValueAtTime(0.045, now + 0.04);
+                    arpGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.75);
+
+                    arpOsc.connect(arpFilter);
+                    arpFilter.connect(arpGain);
+                    arpGain.connect(masterMusicGain);
+
+                    arpOsc.start(now);
+                    arpOsc.stop(now + 0.8);
+
+                    stepIndex++;
+                };
+
+                playStep();
+                musicInterval = setInterval(playStep, 500); // Tempo calme ~60 BPM
+            } catch (e) {
+                console.log("Erreur audio:", e);
+            }
+        }
+
+        function stopAmbientMusic() {
+            if (musicInterval) {
+                clearInterval(musicInterval);
+                musicInterval = null;
+            }
+            if (masterMusicGain && audioCtx) {
+                try {
+                    const now = audioCtx.currentTime;
+                    masterMusicGain.gain.cancelScheduledValues(now);
+                    masterMusicGain.gain.setValueAtTime(masterMusicGain.gain.value, now);
+                    masterMusicGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                } catch (e) {}
+            }
+        }
+
         function toggleAudio() {
             audioEnabled = !audioEnabled;
             const icon = document.getElementById('audio-icon');
             if (audioEnabled) {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                icon.className = "fa-solid fa-volume-high text-soc-green";
+                initAudioContext();
+                icon.className = "fa-solid fa-volume-high text-soc-green animate-pulse";
                 playSound('unlock');
+                startAmbientMusic();
             } else {
                 icon.className = "fa-solid fa-volume-xmark text-soc-red";
+                stopAmbientMusic();
             }
         }
 
@@ -593,6 +779,8 @@
             const input = document.getElementById('ip-octet').value.trim();
             const val = input ? parseInt(input) : 25;
             document.getElementById('userX-result').textContent = `user${val}`;
+            const sshCmd = document.getElementById('ssh-direct-cmd');
+            if (sshCmd) sshCmd.textContent = `ssh user${val}@prociel.cloud`;
         }
 
         // Data: 12 Levels
@@ -718,19 +906,16 @@
             const docQual = parseInt(document.getElementById('sim-doc-quality').value);
             document.getElementById('sim-mission-val').textContent = mission;
 
-            // Barème : Mission 1 = 1, Mission 20 = 20, Mission 40 = 20 + 20 Bonus
-            let scoreProg = 0;
+            // Barème : Niveau 1 = 0/20, Niveau 21 = 20/20 (1 pt/niveau), Niveau 45 = deuxième 20/20 uniquement
+            let scoreProg = Math.max(0, Math.min(20, mission - 1));
             let bonusText = "";
 
-            if (mission <= 20) {
-                scoreProg = Math.round((mission / 20) * 20);
-            } else {
-                scoreProg = 20;
-                const bonus = Math.round(((mission - 20) / 20) * 20);
-                bonusText = `+ ${bonus} pts de BONUS (Super-Note)`;
+            if (mission >= 45) {
+                bonusText = "+ 20/20 (2ème 20 DÉBLOQUÉ !)";
+            } else if (mission > 21) {
+                bonusText = `Progression bonus : niveau ${mission}/45 (2ème 20 au niv. 45)`;
             }
 
-            // Pondération avec la qualité du doc
             let finalNote = Math.min(20, Math.max(0, scoreProg));
             
             document.getElementById('sim-final-note').textContent = `${finalNote} / 20`;
