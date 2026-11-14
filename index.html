@@ -3,978 +3,1369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GAMESHELL // HQ BAC PRO CIEL - Manuel & Evaluation Cyber</title>
-    <!-- Tailwind CSS -->
+    <title>SOC // GAMESHELL - BAC PRO CIEL</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=JetBrains+Mono:wght@400;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-    <!-- FontAwesome icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        soc: {
-                            bg: '#05070a',
-                            card: '#0b0f17',
-                            panel: '#101622',
-                            border: '#1b263b',
-                            green: '#00ff66',
-                            greenGlow: 'rgba(0, 255, 102, 0.15)',
-                            cyan: '#00f0ff',
-                            red: '#ff0055',
-                            yellow: '#ffcc00',
-                            purple: '#a855f7',
-                            text: '#94a3b8'
-                        }
-                    },
-                    fontFamily: {
-                        mono: ['"JetBrains Mono"', '"Fira Code"', 'monospace'],
-                        tech: ['"Share Tech Mono"', 'monospace']
-                    }
-                }
-            }
-        }
-    </script>
-
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-void: #020408;
+            --bg-panel: rgba(7, 12, 20, 0.88);
+            --bg-card: rgba(11, 18, 30, 0.94);
+            --neon-green: #00ff66;
+            --neon-cyan: #00f0ff;
+            --neon-amber: #ffb800;
+            --neon-red: #ff0055;
+            --neon-purple: #b026ff;
+            --border-dim: #162235;
+        }
+
         body {
-            background-color: #05070a;
-            color: #94a3b8;
+            background-color: var(--bg-void);
+            color: #d1d9e0;
             font-family: 'JetBrains Mono', monospace;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(0, 255, 102, 0.05) 0%, transparent 75%),
-                linear-gradient(to right, rgba(0, 255, 102, 0.02) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(0, 255, 102, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 24px 24px, 24px 24px;
+            overflow-x: hidden;
         }
 
-        .scanlines::before {
-            content: " ";
-            display: block;
+        h1, h2, h3, .font-cyber {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.06em;
+        }
+
+        /* Canvas Matrix Rain en arrière-plan */
+        #matrixCanvas {
             position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
-            z-index: 999;
-            background-size: 100% 4px, 6px 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.16;
             pointer-events: none;
-            opacity: 0.6;
         }
 
-        .glow-matrix { text-shadow: 0 0 8px rgba(0, 255, 102, 0.6), 0 0 20px rgba(0, 255, 102, 0.2); }
-        .glow-cyan { text-shadow: 0 0 8px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.2); }
-        .glow-purple { text-shadow: 0 0 8px rgba(168, 85, 247, 0.6), 0 0 20px rgba(168, 85, 247, 0.2); }
-
-        .border-soc {
-            border: 1px solid #1b263b;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+        /* Overlay Grille & Scanlines */
+        .cyber-grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: 
+                radial-gradient(circle at 20% 25%, rgba(0, 255, 102, 0.05) 0%, transparent 45%),
+                radial-gradient(circle at 80% 75%, rgba(0, 240, 255, 0.05) 0%, transparent 45%),
+                linear-gradient(rgba(0, 255, 102, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 102, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+            pointer-events: none;
         }
 
-        .border-soc-glow {
-            border: 1px solid rgba(0, 255, 102, 0.3);
-            box-shadow: 0 0 15px rgba(0, 255, 102, 0.08), inset 0 0 15px rgba(0, 255, 102, 0.02);
+        .scanlines::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.18),
+                rgba(0, 0, 0, 0.18) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            z-index: 9998;
+            pointer-events: none;
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #05070a; }
-        ::-webkit-scrollbar-thumb { background: #1b263b; border-radius: 2px; border: 1px solid #00ff66; }
-        ::-webkit-scrollbar-thumb:hover { background: #00ff66; }
+        /* Panneaux SOC */
+        .soc-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-dim);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
+        }
 
+        .soc-panel:hover {
+            border-color: rgba(0, 255, 102, 0.35);
+            box-shadow: 0 8px 32px rgba(0, 255, 102, 0.06);
+        }
+
+        .glow-green { text-shadow: 0 0 12px rgba(0, 255, 102, 0.55); }
+        .glow-cyan { text-shadow: 0 0 12px rgba(0, 240, 255, 0.55); }
+        .glow-amber { text-shadow: 0 0 12px rgba(255, 184, 0, 0.55); }
+        .glow-red { text-shadow: 0 0 12px rgba(255, 0, 85, 0.55); }
+
+        /* Navigation Horizontale Header */
+        .nav-tab {
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
         .nav-tab.active {
-            border-bottom: 2px solid #00ff66;
-            color: #00ff66;
-            background: rgba(0, 255, 102, 0.05);
+            background: rgba(0, 255, 102, 0.12);
+            border-color: var(--neon-green);
+            color: var(--neon-green);
+            box-shadow: inset 0 0 12px rgba(0, 255, 102, 0.12);
+        }
+        .nav-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom-color: rgba(0, 240, 255, 0.5);
+            color: #ffffff;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #020408; }
+        ::-webkit-scrollbar-thumb { background: #1a283d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-green); }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #131e30;
+            border-radius: 3px;
+            border: 1px solid #233552;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 3px;
+            background: var(--neon-green);
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+            box-shadow: 0 0 12px var(--neon-green);
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { border-color: rgba(255, 0, 85, 0.45); }
+            50% { border-color: rgba(255, 0, 85, 0.95); }
+        }
+        .pulse-danger {
+            animation: pulse-red 2.2s infinite;
         }
     </style>
 </head>
-<body class="scanlines min-h-screen text-slate-300 flex flex-col justify-between selection:bg-soc-green selection:text-black">
+<body class="scanlines min-h-screen flex flex-col">
 
-    <header class="border-b border-soc-border bg-soc-bg/95 backdrop-blur sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3">
-            <div class="flex flex-wrap justify-between items-center gap-4">
-                
-                <div class="flex items-center gap-3">
-                    <div class="relative flex items-center justify-center w-9 h-9 rounded bg-black border border-soc-green/60">
-                        <i class="fa-solid fa-terminal text-soc-green text-base"></i>
-                        <span class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-soc-green animate-ping"></span>
-                    </div>
-                    <div>
-                        <h1 class="text-lg md:text-xl font-extrabold tracking-wider text-white font-tech flex items-center gap-2">
-                            GAMESHELL <span class="text-soc-green glow-matrix">// BAC PRO CIEL</span>
-                        </h1>
-                        <p class="text-[10px] text-slate-400 font-mono tracking-widest uppercase">Serveur d'Apprentissage Linux & Administration Système</p>
-                    </div>
+    <!-- ARRIÈRE-PLAN MATRIX & GRILLE SOC -->
+    <canvas id="matrixCanvas"></canvas>
+    <div class="cyber-grid-overlay"></div>
+
+    <!-- HEADER TACTIQUE AVEC RECHERCHE GLOBALE ET MENU HORIZONTAL -->
+    <header class="sticky top-0 z-50 border-b border-[#162235] bg-[#03060c]/95 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 pt-3 pb-2 flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- LOGO & IDENTITÉ -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg border border-[#00ff66] bg-[#00ff66]/10 flex items-center justify-center text-[#00ff66] font-bold text-lg shadow-[0_0_16px_rgba(0,255,102,0.25)]">
+                    &gt;_
                 </div>
-
-                <div class="flex items-center gap-2 font-mono text-xs">
-                    <button onclick="switchTab('tab-guide')" id="btn-tab-guide" class="nav-tab active px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
-                        <i class="fa-solid fa-play text-soc-green"></i> <span>Tutoriel & Jeu</span>
-                    </button>
-                    <button onclick="switchTab('tab-memo')" id="btn-tab-memo" class="nav-tab px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
-                        <i class="fa-solid fa-book-bookmark text-soc-cyan"></i> <span>Fiche Mémo Élève</span>
-                    </button>
-                    <button onclick="switchTab('tab-eval')" id="btn-tab-eval" class="nav-tab px-3 py-1.5 rounded-t transition flex items-center gap-1.5 text-slate-300 hover:text-white">
-                        <i class="fa-solid fa-graduation-cap text-soc-purple"></i> <span>Grille Évaluation</span>
-                    </button>
-                    
-                    <button onclick="toggleAudio()" title="Activer / Couper l'ambiance sonore & la musique" class="ml-2 bg-soc-card border border-soc-border text-slate-400 p-1.5 rounded hover:text-soc-green transition flex items-center gap-1.5">
-                        <i class="fa-solid fa-volume-xmark text-soc-red" id="audio-icon"></i>
-                    </button>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] px-2 py-0.5 rounded bg-[#00ff66]/15 border border-[#00ff66]/40 text-[#00ff66] font-bold">BAC PRO CIEL</span>
+                        <span class="text-[11px] text-slate-400 hidden sm:inline">TP UNIX / LINUX SHELL</span>
+                    </div>
+                    <h1 class="text-base md:text-lg font-bold text-white tracking-wider">
+                        GAMESHELL <span class="text-[#00f0ff] glow-cyan">// OPS CENTER</span>
+                    </h1>
                 </div>
+            </div>
 
+            <!-- RECHERCHE GLOBALE EN TEMPS RÉEL -->
+            <div class="order-3 md:order-2 w-full md:w-80 lg:w-96 relative">
+                <span class="absolute left-3 top-2.5 text-xs text-[#00ff66]">🔍</span>
+                <input type="text" id="globalSearchInput" oninput="handleGlobalSearch()" placeholder="Recherche rapide (mkdir, gsh goto, niv. 21, prociel)..." class="w-full bg-[#070d17] border border-[#1a283d] focus:border-[#00ff66] rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 outline-none transition">
+                <button id="clearGlobalSearchBtn" onclick="clearGlobalSearch()" class="hidden absolute right-2.5 top-2 text-xs text-slate-400 hover:text-white">✕</button>
+            </div>
+
+            <!-- STATUT SERVEUR & AUDIO -->
+            <div class="order-2 md:order-3 flex items-center gap-2.5">
+                <div class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#070d17] border border-[#1a283d] text-xs">
+                    <span class="w-2 h-2 rounded-full bg-[#00ff66] animate-ping"></span>
+                    <span class="text-slate-400">SRV:</span>
+                    <span class="text-[#00f0ff] font-bold">prociel.cloud</span>
+                </div>
+                <button id="audioToggleBtn" onclick="toggleAudio()" title="Activer / Couper la musique d'ambiance lo-fi" class="px-3 py-1.5 rounded-lg border border-[#1a283d] bg-[#070d17] hover:border-[#00ff66] text-xs text-slate-300 flex items-center gap-2 transition">
+                    <span id="audioIcon">🔇</span>
+                    <span id="audioLabel" class="font-semibold">AUDIO: OFF</span>
+                </button>
             </div>
         </div>
+
+        <!-- BARRE DE NAVIGATION HORIZONTALE EN HAUT -->
+        <nav class="max-w-7xl mx-auto px-4 pt-1 flex overflow-x-auto gap-1.5 no-scrollbar">
+            <button onclick="switchSection('briefing')" id="nav-briefing" class="nav-tab active px-3.5 py-2 rounded-t-lg text-xs font-bold whitespace-nowrap flex items-center gap-2">
+                <span>📡</span> 1. CONNEXION & CONSIGNES
+            </button>
+
+            <button onclick="switchSection('missions')" id="nav-missions" class="nav-tab px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-400 whitespace-nowrap flex items-center gap-2">
+                <span>🎯</span> 2. AIDE MISSIONS (1-45)
+            </button>
+
+            <button onclick="switchSection('cheatsheet')" id="nav-cheatsheet" class="nav-tab px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-400 whitespace-nowrap flex items-center gap-2">
+                <span>📘</span> 3. FICHE MÉMO & RAPPORT PDF
+            </button>
+
+            <button onclick="switchSection('terminal')" id="nav-terminal" class="nav-tab px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-400 whitespace-nowrap flex items-center gap-2">
+                <span>💻</span> 4. TERMINAL TRAINER
+            </button>
+
+            <button onclick="switchSection('notation')" id="nav-notation" class="nav-tab px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-400 whitespace-nowrap flex items-center gap-2">
+                <span>📊</span> 5. BARÈME & ÉVALUATION
+            </button>
+        </nav>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow space-y-8 w-full">
-
-        <!-- ========================================== -->
-        <!-- TAB 1: TUTORIEL & LANCEMENT DU JEU        -->
-        <!-- ========================================== -->
-        <div id="tab-guide" class="tab-content space-y-8">
-            
-            <!-- Banner Connexion PuTTY & IP -->
-            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-96 h-96 bg-soc-green/5 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center relative z-10">
-                    <div class="lg:col-span-1 space-y-3">
-                        <div class="inline-flex items-center gap-2 text-[10px] text-soc-green bg-soc-green/10 border border-soc-green/30 px-2.5 py-0.5 rounded uppercase font-bold tracking-widest">
-                            <i class="fa-solid fa-network-wired"></i> Connexion Salle informatique
-                        </div>
-                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide">
-                            LANCER <span class="text-soc-green glow-matrix">PUTTY & GAMESHELL</span>
-                        </h2>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Ouvrez le logiciel <strong class="text-white">PuTTY</strong> puis renseignez les paramètres de connexion à destination du serveur Linux de la classe.
-                        </p>
-
-                        <div class="bg-black/60 p-3 rounded border border-soc-border text-xs space-y-1.5 font-mono">
-                            <div class="flex justify-between items-center">
-                                <span class="text-slate-400">Host Name (IP) :</span>
-                                <span class="text-soc-cyan font-bold flex items-center gap-2">
-                                    prociel.cloud
-                                    <button onclick="copyToClipboard('prociel.cloud')" class="text-slate-400 hover:text-soc-cyan text-[11px]" title="Copier l'adresse du serveur">
-                                        <i class="fa-regular fa-copy"></i>
-                                    </button>
-                                </span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">Type de connexion :</span>
-                                <span class="text-soc-green font-bold">SSH (Port 22)</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-slate-400">Mot de passe :</span>
-                                <span class="text-soc-yellow font-bold">eleve</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Calculateur d'identifiant userX -->
-                    <div class="lg:col-span-2 bg-black/80 p-5 rounded-lg border border-soc-border space-y-4 font-mono text-xs">
-                        <h3 class="text-sm font-bold text-soc-cyan flex items-center gap-2 font-tech">
-                            <i class="fa-solid fa-calculator"></i> CALCULATEUR D'IDENTIFIANT VOTRE POSTE (userX)
-                        </h3>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] text-slate-400 block mb-1">Entrez le dernier octet de votre IP (X) :</label>
-                                <input type="number" id="ip-octet" min="1" max="254" value="25" oninput="calculateUserX()" 
-                                       class="w-full bg-soc-panel border border-soc-border rounded px-3 py-1.5 text-soc-green font-bold focus:outline-none focus:border-soc-green text-sm">
-                            </div>
-                            <div>
-                                <label class="text-[10px] text-slate-400 block mb-1">Votre login PuTTY généré :</label>
-                                <div class="bg-soc-panel border border-soc-cyan/40 text-soc-cyan font-bold px-3 py-1.5 rounded text-sm flex items-center justify-between">
-                                    <span id="userX-result">user25</span>
-                                    <i class="fa-solid fa-user-check text-xs text-soc-cyan"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Analyse explicative de la commande bash gameshell.sh -L fr -->
-                        <div class="bg-soc-panel p-3 rounded border border-soc-border space-y-2">
-                        <!-- Analyse explicative de la commande bash gameshell.sh -->
-                        <div class="bg-soc-panel p-3 rounded border border-soc-border space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400 font-bold">Commande de lancement du jeu :</span>
-                                <button onclick="copyToClipboard('bash gameshell.sh')" class="text-soc-green hover:underline text-[11px]">
-                                    <i class="fa-regular fa-copy"></i> Copier
-                                </button>
-                            </div>
-                            <div class="bg-black p-2 rounded text-soc-green font-bold text-sm">
-                                <code>bash gameshell.sh</code>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] pt-1 border-t border-slate-800">
-                                <div><strong class="text-soc-cyan">bash :</strong> Interpréteur de commande Linux</div>
-                                <div><strong class="text-soc-cyan">gameshell.sh :</strong> Script exécutable du jeu GameShell</div>
-                            </div>
-                        </div>
-
-                        <!-- Commande SSH directe -->
-                        <div class="bg-soc-panel p-3 rounded border border-soc-border flex items-center justify-between">
-                            <span class="text-slate-400">Connexion directe (Terminal / PowerShell) : <code id="ssh-direct-cmd" class="text-soc-cyan font-bold">ssh user25@prociel.cloud</code></span>
-                            <button onclick="copyToClipboard(document.getElementById('ssh-direct-cmd').textContent)" class="text-soc-cyan hover:underline text-[11px]">
-                                <i class="fa-regular fa-copy"></i> Copier
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- Commandes GSH obligatoires -->
-                <div class="bg-soc-card border border-soc-border p-5 rounded-xl space-y-3">
-                    <div class="flex flex-wrap items-center justify-between gap-2">
-                        <h3 class="text-base font-bold text-soc-green font-tech flex items-center gap-2">
-                            <i class="fa-solid fa-terminal"></i> COMMANDES SPÉCIFIQUES "gsh"
-                        </h3>
-                        <div class="inline-flex items-center gap-1.5 bg-soc-purple/15 border border-soc-purple/40 px-2.5 py-0.5 rounded-full text-[11px] font-mono">
-                            <i class="fa-solid fa-key text-soc-purple text-[10px]"></i>
-                            <span class="text-slate-300">Mot de passe :</span>
-                            <code class="text-soc-purple font-bold">gsh</code>
-                            <button onclick="copyToClipboard('gsh')" class="text-slate-400 hover:text-soc-purple ml-1" title="Copier le mot de passe gsh">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <p class="text-xs text-slate-400">Ce sont les seules commandes propres à GameShell pour piloter la progression :</p>
-                    
-                    <div class="space-y-2 text-xs font-mono">
-                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
-                            <div>
-                                <code class="text-soc-cyan font-bold">gsh goal</code>
-                                <p class="text-[11px] text-slate-400">Affiche le texte et l'objectif de la mission courante</p>
-                            </div>
-                            <button onclick="copyToClipboard('gsh goal')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-
-                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
-                            <div>
-                                <code class="text-soc-green font-bold">gsh check</code>
-                                <p class="text-[11px] text-slate-400">Vérifie si la mission est réussie et passe à la suivante</p>
-                            </div>
-                            <button onclick="copyToClipboard('gsh check')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-
-                        <div class="bg-black p-2.5 rounded border border-soc-purple/30 flex justify-between items-center">
-                            <div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <code class="text-soc-purple font-bold">gsh goto &lt;niveau&gt;</code>
-                                    <span class="text-[10px] bg-soc-purple/10 text-soc-purple border border-soc-purple/30 px-1.5 py-0.2 rounded">MDP : gsh</span>
-                                </div>
-                                <p class="text-[11px] text-slate-400">Permet d'atteindre directement un niveau précis (ex: <code class="text-slate-300">gsh goto 5</code>)</p>
-                            </div>
-                            <button onclick="copyToClipboard('gsh goto ')" class="text-slate-500 hover:text-soc-purple" title="Copier gsh goto "><i class="fa-regular fa-copy"></i></button>
-                        </div>
-
-                        <div class="bg-black p-2.5 rounded border border-soc-yellow/30 flex justify-between items-center">
-                            <div>
-                                <div class="flex flex-wrap items-center gap-2">
-                                    <code class="text-soc-yellow font-bold">gsh skip</code>
-                                    <span class="text-[10px] bg-soc-purple/10 text-soc-purple border border-soc-purple/30 px-1.5 py-0.2 rounded">MDP : gsh</span>
-                                </div>
-                                <p class="text-[11px] text-slate-400">Permet de passer la mission actuelle si vous êtes bloqué</p>
-                            </div>
-                            <button onclick="copyToClipboard('gsh skip')" class="text-slate-500 hover:text-soc-yellow" title="Copier gsh skip"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-
-                        <div class="bg-black p-2.5 rounded border border-soc-border flex justify-between items-center">
-                            <div>
-                                <code class="text-soc-red font-bold">gsh exit</code>
-                                <p class="text-[11px] text-slate-400">Sauvegarde l'avancement et quitte le jeu proprement</p>
-                            </div>
-                            <button onclick="copyToClipboard('gsh exit')" class="text-slate-500 hover:text-soc-green"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Procédure de Sauvegarde -->
-                <div class="bg-soc-card border border-soc-border p-5 rounded-xl space-y-3 relative overflow-hidden">
-                    <div class="flex items-center justify-between border-b border-soc-border pb-2">
-                        <h3 class="text-base font-bold text-soc-yellow font-tech flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk"></i> REPRISE DE PARTIE (SAUVEGARDE)
-                        </h3>
-                        <span class="text-[10px] text-soc-yellow bg-soc-yellow/10 border border-soc-yellow/30 px-2 py-0.5 rounded font-mono uppercase">Important</span>
-                    </div>
-
-                    <p class="text-xs text-slate-300 leading-relaxed">
-                        Lorsque vous exécutez la commande <code class="text-soc-red">gsh exit</code>, le jeu génère automatiquement un fichier nommé <strong class="text-white">gameshell-save.sh</strong>.
-                    </p>
-
-                    <div class="bg-black p-3 rounded border border-soc-yellow/30 text-xs font-mono space-y-2">
-                        <p class="text-slate-400">Pour reprendre votre partie la séance suivante, tapez :</p>
-                        <div class="text-soc-yellow font-bold flex justify-between items-center bg-soc-panel p-2 rounded">
-                            <code>bash gameshell-save.sh</code>
-                            <button onclick="copyToClipboard('bash gameshell-save.sh')" class="text-slate-400 hover:text-soc-yellow"><i class="fa-regular fa-copy"></i></button>
-                        </div>
-                        <p class="text-[10px] text-slate-500 italic">⚠️ Ne relancez pas gameshell.sh si vous avez déjà une sauvegarde, sinon vous repartirez du début !</p>
-                    </div>
-                </div>
-
+    <!-- PANNEAU RÉSULTATS RECHERCHE GLOBALE (SI ACTIF) -->
+    <div id="globalSearchResultsPanel" class="hidden max-w-7xl w-full mx-auto px-4 pt-4">
+        <div class="soc-panel rounded-xl p-4 border-[#00ff66]/50 space-y-3">
+            <div class="flex items-center justify-between border-b border-[#162235] pb-2">
+                <span class="text-xs font-bold text-[#00ff66]">⚡ RÉSULTATS DE RECHERCHE GLOBALE (<span id="globalSearchCount">0</span>)</span>
+                <button onclick="clearGlobalSearch()" class="text-xs text-slate-400 hover:text-white">Fermer ✕</button>
             </div>
-
-            <!-- Simulator -->
-            <section class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-base font-bold font-tech text-soc-green flex items-center gap-2 glow-matrix uppercase tracking-wider">
-                        <i class="fa-solid fa-terminal"></i> SIMULATEUR TACTIQUE // TERMINAL SANDBOX
-                    </h3>
-                    <span class="text-[11px] text-slate-500 font-mono">Entraînement direct aux commandes Unix</span>
-                </div>
-
-                <div class="bg-black border border-soc-green/40 rounded-lg p-4 font-mono text-xs shadow-2xl relative">
-                    <div class="flex items-center justify-between border-b border-soc-border pb-2.5 mb-3 text-[11px] text-slate-500">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-soc-red"></span>
-                            <span class="w-2.5 h-2.5 rounded-full bg-soc-yellow"></span>
-                            <span class="w-2.5 h-2.5 rounded-full bg-soc-green"></span>
-                            <span class="ml-2 font-bold text-slate-300">userX@gameshell-ciel:~</span>
-                        </div>
-                        <span class="text-[10px] text-soc-cyan">GameShell Virtual Kernel v4.2</span>
-                    </div>
-
-                    <div id="terminal-output" class="space-y-1.5 mb-3 max-h-48 overflow-y-auto text-slate-300 pr-1">
-                        <p class="text-soc-green font-bold">=== GAMESHELL SIMULATOR CIEL OK ===</p>
-                        <p class="text-slate-400">Testez vos commandes ici avant le vrai jeu. Exemple: <code class="text-soc-green">ls</code>, <code class="text-soc-green">pwd</code>, <code class="text-soc-green">gsh goal</code>.</p>
-                    </div>
-
-                    <form id="terminal-form" class="flex items-center gap-2 border-t border-soc-border pt-2 text-xs">
-                        <span class="text-soc-green font-bold flex items-center gap-1">
-                            <span>userX@gameshell:</span><span id="prompt-path" class="text-soc-cyan">~</span><span>$</span>
-                        </span>
-                        <input type="text" id="terminal-input" autocomplete="off" placeholder="Tapez une commande..." 
-                               class="bg-transparent text-slate-100 flex-grow focus:outline-none font-mono caret-soc-green">
-                        <button type="submit" class="bg-soc-green/10 hover:bg-soc-green/20 text-soc-green border border-soc-green/40 px-3 py-1 rounded text-[11px]">
-                            Exécuter
-                        </button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- Guide des 12 premiers niveaux -->
-            <section class="space-y-4">
-                <div class="border-b border-soc-border pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
-                    <div>
-                        <h3 class="text-xl font-bold font-tech text-soc-cyan flex items-center gap-2 glow-cyan uppercase tracking-wider">
-                            <i class="fa-solid fa-crosshairs"></i> GUIDE DES MISSIONS DU JEU
-                        </h3>
-                        <p class="text-xs text-slate-400">Objectifs et indices déverrouillables pour démarrer votre progression.</p>
-                    </div>
-
-                    <div class="flex items-center gap-2 text-xs font-mono">
-                        <button onclick="filterLevels('all')" class="lvl-btn active bg-soc-cyan/20 border border-soc-cyan text-soc-cyan px-2.5 py-1 rounded">Tous (12)</button>
-                        <button onclick="filterLevels('base')" class="lvl-btn bg-soc-card border border-soc-border text-slate-400 px-2.5 py-1 rounded">Bases (1-6)</button>
-                        <button onclick="filterLevels('avance')" class="lvl-btn bg-soc-card border border-soc-border text-slate-400 px-2.5 py-1 rounded">Avancés (7-12)</button>
-                    </div>
-                </div>
-
-                <div id="levels-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Javascript Dynamic insertion -->
-                </div>
-            </section>
-
+            <div id="globalSearchList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-72 overflow-y-auto pr-1"></div>
         </div>
+    </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 2: FICHE MÉMO ÉLÈVE & GUIDE RENDU      -->
-        <!-- ========================================== -->
-        <div id="tab-memo" class="tab-content hidden space-y-8">
-            
-            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-soc-border pb-4">
-                    <div>
-                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide flex items-center gap-2">
-                            <i class="fa-solid fa-book-bookmark text-soc-cyan"></i> FICHE MÉMO ÉLÈVE & SYNTHÈSE COMMANDES
-                        </h2>
-                        <p class="text-xs text-slate-400">Le récapitulatif complet des commandes Unix indispensables pour réussir GameShell et rédiger votre rapport.</p>
+    <!-- CONTENEUR PRINCIPAL PLEINE LARGEUR -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+
+            <!-- ===================================================== -->
+            <!-- SECTION 1 : ACCÈS SSH PUTTY, LANCEMENT & COMMANDES GSH -->
+            <!-- ===================================================== -->
+            <section id="sec-briefing" class="space-y-6">
+                
+                <!-- BANNIÈRE INTRODUCTION -->
+                <div class="soc-panel rounded-xl p-5 border-l-4 border-l-[#00ff66]">
+                    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+                        <div class="space-y-1.5">
+                            <div class="inline-flex items-center gap-2 text-[11px] text-[#00ff66] font-bold uppercase">
+                                <span>// BRIEFING DE MISSION</span>
+                            </div>
+                            <h2 class="text-lg md:text-xl font-bold text-white">APPRENDRE UNIX / GNU LINUX AVEC GAMESHELL</h2>
+                            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                Mis au point par <strong>Pierre Hyvernat</strong> et <strong>Rodolphe Lepigre</strong>, GameShell est un jeu en ligne de commande proposant des missions d'exploration. 
+                                Les <span class="text-[#00ff66] font-semibold">« lieux » correspondent à des répertoires</span> et les <span class="text-[#00f0ff] font-semibold">« objets » à des fichiers</span>.
+                            </p>
+                        </div>
+                        <div class="shrink-0 bg-[#040810] border border-[#162235] rounded-lg p-3.5 text-xs space-y-1.5">
+                            <div class="text-[10px] text-slate-500 uppercase font-bold">TRADUCTION SHELL :</div>
+                            <div class="text-[#00ff66]">« Construire une cabane » ➔ <code class="bg-black px-1.5 py-0.5 rounded border border-[#162235]">mkdir cabane</code></div>
+                            <div class="text-[#00f0ff]">« Mettre pièce dans coffre » ➔ <code class="bg-black px-1.5 py-0.5 rounded border border-[#162235]">mv piece coffre/</code></div>
+                        </div>
                     </div>
-                    <div class="relative w-full sm:w-64">
-                        <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-                        <input type="text" id="memo-search" oninput="filterMemoCommands()" placeholder="Rechercher une commande..." 
-                               class="w-full bg-black border border-soc-border rounded pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-soc-cyan">
-                    </div>
                 </div>
 
-                <div id="memo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Populated dynamically via JS -->
-                </div>
-            </section>
-
-            <!-- Guide rédaction du Google Doc / PDF -->
-            <section class="bg-soc-card border border-soc-border p-6 rounded-xl space-y-6">
-                <div class="border-b border-soc-border pb-3">
-                    <h3 class="text-lg font-bold font-tech text-soc-green flex items-center gap-2 uppercase tracking-wider">
-                        <i class="fa-solid fa-file-pdf"></i> METHODOLOGIE : COMMENT RÉDIGER ET RENDRE VOTRE DOCUMENT
-                    </h3>
-                    <p class="text-xs text-slate-400">Suivez rigoureusement ces consignes pour obtenir la note maximale.</p>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 font-mono text-xs">
+                <!-- GRILLE PUTTY + LANCEMENT & SAUVEGARDE -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     
-                    <!-- Etape 1 -->
-                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
-                        <span class="absolute -top-3 left-4 bg-soc-cyan text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 1</span>
-                        <h4 class="font-bold text-white text-sm pt-2">Création du Google Doc</h4>
-                        <p class="text-slate-400">Nommez votre document avec le format exact requis par le professeur :</p>
-                        <div class="bg-soc-panel p-2 rounded border border-soc-cyan/30 text-soc-cyan font-bold text-[11px] flex justify-between items-center">
-                            <span>GameShell + Nom + Prénom + Classe</span>
-                            <button onclick="copyToClipboard('GameShell + Nom + Prénom + Classe')" class="text-slate-400 hover:text-soc-cyan"><i class="fa-regular fa-copy"></i></button>
+                    <!-- CARTE CONNEXION PUTTY & CALCULATEUR USERX -->
+                    <div class="soc-panel rounded-xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-[#162235] pb-3">
+                            <h3 class="text-sm font-bold text-[#00f0ff] flex items-center gap-2">
+                                <span>🔌</span> 1. CONNEXION AU SERVEUR VIA PUTTY
+                            </h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/30">SSH PORT 22</span>
                         </div>
-                        <p class="text-[10px] text-slate-500 italic">Exemple: GameShell_DUPONT_Jean_1CIEL</p>
-                    </div>
 
-                    <!-- Etape 2 -->
-                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
-                        <span class="absolute -top-3 left-4 bg-soc-green text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 2</span>
-                        <h4 class="font-bold text-white text-sm pt-2">Structure de chaque Mission</h4>
-                        <p class="text-slate-400">Pour chaque niveau complété, vous devez indiquer :</p>
-                        <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px]">
-                            <li><strong>Numéro de Mission :</strong> ex: Mission 5</li>
-                            <li><strong>Commandes utilisées :</strong> ex: <code class="text-soc-green">cd / rm / ls</code></li>
-                            <li><strong>Explication courte :</strong> Explication en 1 phrase.</li>
-                            <li><strong>Capture d'écran :</strong> Montrant <code class="text-soc-green">gsh check</code> validé.</li>
-                        </ul>
-                    </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                            <div class="bg-[#040810] border border-[#162235] p-3 rounded-lg flex items-center justify-between">
+                                <span class="text-slate-400">Host Name (IP) :</span>
+                                <div class="flex items-center gap-1.5">
+                                    <code class="text-[#00f0ff] font-bold">prociel.cloud</code>
+                                    <button onclick="copyText('prociel.cloud', this)" class="px-1.5 py-0.5 bg-[#162235] hover:bg-[#00f0ff] hover:text-black rounded text-[10px] transition">Copier</button>
+                                </div>
+                            </div>
 
-                    <!-- Etape 3 -->
-                    <div class="bg-black/60 p-4 rounded-lg border border-soc-border space-y-2 relative">
-                        <span class="absolute -top-3 left-4 bg-soc-purple text-black font-bold px-2 py-0.5 rounded text-[10px]">ÉTAPE 3</span>
-                        <h4 class="font-bold text-white text-sm pt-2">Export PDF & Dépôt</h4>
-                        <p class="text-slate-400">Avant la date limite de l'évaluation finale :</p>
-                        <ul class="list-disc list-inside text-slate-300 space-y-1 text-[11px]">
-                            <li>Allez dans Google Doc > Fichier > Télécharger > <strong>Document PDF (.pdf)</strong></li>
-                            <li>Déposez le fichier PDF final dans votre devoir <strong>Google Classroom</strong>.</li>
-                        </ul>
-                    </div>
+                            <div class="bg-[#040810] border border-[#162235] p-3 rounded-lg flex items-center justify-between">
+                                <span class="text-slate-400">Connection type :</span>
+                                <span class="text-[#00ff66] font-bold">SSH</span>
+                            </div>
 
-                </div>
-            </section>
+                            <div class="bg-[#040810] border border-[#162235] p-3 rounded-lg flex items-center justify-between">
+                                <span class="text-slate-400">Login as :</span>
+                                <span class="text-white font-bold">userX <span class="text-[10px] text-slate-400 font-normal">(X = dernier octet IP)</span></span>
+                            </div>
 
-        </div>
-
-        <!-- ========================================== -->
-        <!-- TAB 3: GRILLE D'ÉVALUATION ENSEIGNANT      -->
-        <!-- ========================================== -->
-        <div id="tab-eval" class="tab-content hidden space-y-8">
-            
-            <section class="bg-soc-card border border-soc-border p-6 rounded-xl border-soc-glow space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-soc-border pb-4">
-                    <div>
-                        <div class="inline-flex items-center gap-2 text-[10px] text-soc-purple bg-soc-purple/10 border border-soc-purple/30 px-2.5 py-0.5 rounded uppercase font-bold tracking-widest">
-                            <i class="fa-solid fa-graduation-cap"></i> Référentiel BAC PRO CIEL
-                        </div>
-                        <h2 class="text-xl font-extrabold text-white font-tech tracking-wide mt-1">
-                            GRILLE D'ÉVALUATION & CALCULATEUR DE NOTE
-                        </h2>
-                        <p class="text-xs text-slate-400">Barème officiel d'évaluation de la progression et de la qualité de la documentation.</p>
-                    </div>
-
-                    <!-- Badge Barème Officiel -->
-                    <div class="bg-black border border-soc-purple/40 p-3 rounded-lg text-xs font-mono space-y-1">
-                        <div class="text-soc-purple font-bold">BARÈME DE NOTATION :</div>
-                        <div class="text-slate-300">• Niveau 1 atteint = <strong class="text-soc-green">00 / 20</strong></div>
-                        <div class="text-slate-300">• Niveau 21 atteint = <strong class="text-soc-green">20 / 20</strong> <span class="text-[10px] text-slate-400">(+1 pt / niveau)</span></div>
-                        <div class="text-slate-300">• Niveau 45 atteint = <strong class="text-soc-green">20 / 20 + 20/20 (2ème 20)</strong></div>
-                    </div>
-                </div>
-
-                <!-- Calculateur Interactif de Note -->
-                <div class="bg-black/80 p-5 rounded-lg border border-soc-border space-y-4">
-                    <h3 class="text-sm font-bold text-soc-purple font-tech flex items-center gap-2">
-                        <i class="fa-solid fa-sliders"></i> CALCULATEUR SIMULATEUR DE NOTE
-                    </h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center font-mono">
-                        <div class="space-y-2">
-                            <label class="text-xs text-slate-300 block">Dernier niveau atteint (1 à 45) :</label>
-                            <input type="range" id="sim-mission" min="1" max="45" value="21" oninput="updateScoreCalc()" 
-                                   class="w-full accent-soc-green bg-soc-panel">
-                            <div class="flex justify-between text-xs text-soc-green font-bold">
-                                <span>Niveau : <span id="sim-mission-val">21</span></span>
+                            <div class="bg-[#040810] border border-[#162235] p-3 rounded-lg flex items-center justify-between">
+                                <span class="text-slate-400">Password :</span>
+                                <div class="flex items-center gap-1.5">
+                                    <code class="text-[#ffb800] font-bold">eleve</code>
+                                    <button onclick="copyText('eleve', this)" class="px-1.5 py-0.5 bg-[#162235] hover:bg-[#ffb800] hover:text-black rounded text-[10px] transition">Copier</button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="text-xs text-slate-300 block">Qualité du Google Doc / PDF (0 à 5 pts) :</label>
-                            <select id="sim-doc-quality" onchange="updateScoreCalc()" class="w-full bg-soc-panel border border-soc-border rounded px-3 py-1.5 text-xs text-white">
-                                <option value="5">Excellent (Format, Titre, Captures, Explications OK)</option>
-                                <option value="3">Moyen (Quelques explications ou captures manquantes)</option>
-                                <option value="1">Insuffisant (Titre incorrect ou pas de captures)</option>
-                                <option value="0">Non rendu / Mauvais format</option>
-                            </select>
+                        <!-- CALCULATEUR DYNAMIQUE USERX -->
+                        <div class="bg-[#040810] border border-[#00ff66]/40 rounded-lg p-4 space-y-3">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-[#00ff66]">CALCULATEUR DE LOGIN (userX)</span>
+                                <span class="text-[11px] text-slate-400">Saisis ton IP locale ou son dernier nombre</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <input type="text" id="ipInput" oninput="updateUserLogin()" placeholder="Ex: 192.168.140.42 ou 42" class="flex-1 bg-[#0a111d] border border-[#1a283d] focus:border-[#00ff66] rounded-lg px-3 py-2 text-xs text-white outline-none">
+                                <div class="flex items-center justify-between sm:justify-start gap-2 bg-[#0a111d] border border-[#00ff66]/50 px-3 py-2 rounded-lg">
+                                    <span class="text-xs text-slate-400">Login :</span>
+                                    <code id="computedLogin" class="text-sm font-bold text-[#00ff66]">userX</code>
+                                    <button onclick="copyComputedLogin(this)" class="text-[11px] px-2 py-0.5 bg-[#00ff66]/20 text-[#00ff66] hover:bg-[#00ff66] hover:text-black rounded transition">Copier</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-[#162235]">
+                                <span>Commande SSH directe :</span>
+                                <div class="flex items-center gap-2">
+                                    <code id="sshDirectCmd" class="text-[#00f0ff]">ssh userX@prociel.cloud</code>
+                                    <button onclick="copyText(document.getElementById('sshDirectCmd').textContent, this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#00f0ff] hover:text-black rounded transition">Copier</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CARTE LANCEMENT & SAUVEGARDE -->
+                    <div class="soc-panel rounded-xl p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-[#162235] pb-3">
+                            <h3 class="text-sm font-bold text-[#00ff66] flex items-center gap-2">
+                                <span>🚀</span> 2. LANCEMENT & SAUVEGARDE DU JEU
+                            </h3>
+                            <span class="text-[11px] px-2 py-0.5 rounded bg-[#00ff66]/10 text-[#00ff66] border border-[#00ff66]/30">SHELL BASH</span>
                         </div>
 
-                        <!-- Résultat calculé -->
-                        <div class="bg-soc-panel p-4 rounded border border-soc-purple/50 text-center space-y-1">
-                            <span class="text-[10px] text-slate-400 uppercase tracking-widest block">Note Estimée / 20</span>
-                            <div id="sim-final-note" class="text-3xl font-extrabold text-soc-green font-tech glow-matrix">20 / 20</div>
-                            <span id="sim-bonus-badge" class="text-[10px] text-soc-yellow font-bold block"></span>
+                        <div class="space-y-2.5">
+                            <div class="text-xs text-slate-300">Une fois connecté, lancez le jeu avec la commande :</div>
+                            <div class="flex items-center justify-between bg-black border border-[#00ff66]/60 p-3 rounded-lg">
+                                <code class="text-sm md:text-base font-bold text-[#00ff66]">bash gameshell.sh</code>
+                                <button onclick="copyText('bash gameshell.sh', this)" class="text-xs px-3 py-1 bg-[#00ff66] text-black font-bold rounded hover:opacity-90 transition">Copier</button>
+                            </div>
+
+                            <!-- DÉCOUPAGE PÉDAGOGIQUE -->
+                            <div class="grid grid-cols-2 gap-2.5 text-xs">
+                                <div class="bg-[#040810] border border-[#162235] p-2.5 rounded-lg">
+                                    <div class="text-[#00f0ff] font-bold">bash</div>
+                                    <div class="text-[11px] text-slate-400">Interpréteur de commandes</div>
+                                </div>
+                                <div class="bg-[#040810] border border-[#162235] p-2.5 rounded-lg">
+                                    <div class="text-[#00ff66] font-bold">gameshell.sh</div>
+                                    <div class="text-[11px] text-slate-400">Script du jeu GameShell</div>
+                                </div>
+                            </div>
+
+                            <!-- EXPLICATION DU MENU [123] -->
+                            <div class="bg-[#040810] border border-[#162235] p-3 rounded-lg text-xs space-y-2">
+                                <div class="text-slate-300 font-semibold">
+                                    Au menu <code class="text-[#ffb800]">What do you want to do? [123]</code> ➔ Choisir :
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    <div class="bg-black/70 border border-[#00ff66]/40 p-2 rounded flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-[#00ff66]/20 border border-[#00ff66] text-[#00ff66] font-bold shrink-0">1</span>
+                                        <span class="text-[11px] text-slate-200">Commencer au début</span>
+                                    </div>
+                                    <div class="bg-black/70 border border-[#00f0ff]/40 p-2 rounded flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-[#00f0ff]/20 border border-[#00f0ff] text-[#00f0ff] font-bold shrink-0">2</span>
+                                        <span class="text-[11px] text-slate-200">Reprendre la sauvegarde</span>
+                                    </div>
+                                    <div class="bg-black/70 border border-[#ff0055]/40 p-2 rounded flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded bg-[#ff0055]/20 border border-[#ff0055] text-[#ff0055] font-bold shrink-0">3</span>
+                                        <span class="text-[11px] text-slate-200">Annuler</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SAUVEGARDE -->
+                        <div class="bg-[#ff0055]/10 border border-[#ff0055]/60 pulse-danger rounded-lg p-3.5 space-y-2">
+                            <div class="text-xs font-bold text-[#ff0055] flex items-center gap-1.5">
+                                <span>⚠️ SAUVEGARDE OBLIGATOIRE AVANT DE QUITTER</span>
+                            </div>
+                            <p class="text-xs text-slate-300">
+                                Tapez <code class="bg-black text-white px-1.5 py-0.5 rounded font-bold">gsh exit</code> pour générer <code class="text-[#ffb800] font-bold">gameshell-save.sh</code>. Pour reprendre votre partie plus tard, lancez ce fichier de sauvegarde :
+                            </p>
+                            <div class="flex items-center justify-between bg-black/90 border border-[#ffb800]/40 p-2 rounded text-xs">
+                                <code class="text-[#ffb800] font-bold">bash gameshell-save.sh</code>
+                                <button onclick="copyText('bash gameshell-save.sh', this)" class="text-[11px] px-2.5 py-0.5 bg-[#ffb800] text-black font-bold rounded">Copier</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Grille détaillée des critères CIEL -->
-                <div class="space-y-3 font-mono text-xs">
-                    <h3 class="text-sm font-bold text-slate-200 font-tech">TABLEAU DÉTAILLÉ DES COMPÉTENCES CIEL ÉVALUÉES</h3>
+                <!-- COMMANDES SPÉCIFIQUES GSH -->
+                <div class="soc-panel rounded-xl p-5 space-y-4">
+                    <div class="flex items-center justify-between border-b border-[#162235] pb-3">
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>⚡</span> 3. COMMANDES SPÉCIFIQUES AU JEU ("gsh")
+                        </h3>
+                        <span class="text-xs text-slate-400">6 commandes intégrées</span>
+                    </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#00f0ff] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#00f0ff]">gsh goal</code>
+                                <button onclick="copyText('gsh goal', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#00f0ff] hover:text-black rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400">Affiche l'objectif de la mission courante.</p>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#00ff66] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#00ff66]">gsh check</code>
+                                <button onclick="copyText('gsh check', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#00ff66] hover:text-black rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400">Vérifie si votre mission courante est validée.</p>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#ffb800] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#ffb800]">gsh help</code>
+                                <button onclick="copyText('gsh help', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#ffb800] hover:text-black rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400">Affiche la liste complète des commandes gsh.</p>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#ff0055] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#ff0055]">gsh exit</code>
+                                <button onclick="copyText('gsh exit', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#ff0055] hover:text-white rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400">Sauvegarde votre avancement et quitte le jeu.</p>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#b026ff] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#b026ff]">gsh goto &lt;niveau&gt;</code>
+                                <button onclick="copyText('gsh goto ', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#b026ff] hover:text-white rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-2">Atteint directement le niveau indiqué (ex: <code class="text-slate-200">gsh goto 10</code>).</p>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#b026ff]/15 border border-[#b026ff]/40 text-[11px] text-[#b026ff]">
+                                🔑 Mot de passe : <strong class="text-white">gsh</strong>
+                            </span>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] hover:border-[#b026ff] p-4 rounded-lg transition">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <code class="text-sm font-bold text-[#b026ff]">gsh skip</code>
+                                <button onclick="copyText('gsh skip', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#b026ff] hover:text-white rounded">Copier</button>
+                            </div>
+                            <p class="text-xs text-slate-400 mb-2">Passe directement le niveau en cours en cas de blocage.</p>
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#b026ff]/15 border border-[#b026ff]/40 text-[11px] text-[#b026ff]">
+                                🔑 Mot de passe : <strong class="text-white">gsh</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================================================== -->
+            <!-- SECTION 2 : GUIDE DES MISSIONS (NIVEAUX 1 À 45)       -->
+            <!-- ===================================================== -->
+            <section id="sec-missions" class="hidden space-y-5">
+                <div class="soc-panel rounded-xl p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                    <div class="relative flex-1">
+                        <span class="absolute left-3 top-2.5 text-xs text-slate-500">🔍</span>
+                        <input type="text" id="missionFilterInput" oninput="renderMissions()" placeholder="Filtrer les missions par numéro, mot-clé ou commande..." class="w-full bg-[#040810] border border-[#162235] focus:border-[#00f0ff] rounded-lg pl-9 pr-4 py-2 text-xs text-white outline-none">
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="setMissionTier('all')" id="tier-all" class="tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00ff66] text-black">TOUTES</button>
+                        <button onclick="setMissionTier('base')" id="tier-base" class="tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#040810] border border-[#162235] text-slate-300">NIV. 1-10 (BASES)</button>
+                        <button onclick="setMissionTier('inter')" id="tier-inter" class="tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#040810] border border-[#162235] text-slate-300">NIV. 11-21 (20/20)</button>
+                        <button onclick="setMissionTier('expert')" id="tier-expert" class="tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#040810] border border-[#162235] text-slate-300">NIV. 22-45 (20+20)</button>
+                    </div>
+                </div>
+
+                <div id="missionsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </section>
+
+            <!-- ===================================================== -->
+            <!-- SECTION 3 : CHEAT SHEET & DOCUMENT À RENDRE (PDF)     -->
+            <!-- ===================================================== -->
+            <section id="sec-cheatsheet" class="hidden space-y-6">
+                
+                <!-- DOCUMENT À RENDRE -->
+                <div class="soc-panel rounded-xl p-5 border-l-4 border-l-[#ffb800] space-y-4">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#162235] pb-3">
+                        <h3 class="text-sm md:text-base font-bold text-[#ffb800]">📄 DOCUMENT À RENDRE AVANT L'ÉVALUATION FINALE</h3>
+                        <span class="px-2.5 py-0.5 rounded bg-[#ff0055]/20 border border-[#ff0055] text-[#ff0055] text-xs font-bold">REMISE PDF SUR CLASSROOM</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div class="bg-[#040810] border border-[#162235] p-4 rounded-lg space-y-2">
+                            <div class="font-bold text-[#00f0ff]">1. TITRE DU GOOGLE DOC</div>
+                            <p class="text-slate-400">Créez un Google Doc intitulé :</p>
+                            <div class="bg-black border border-[#00f0ff]/40 p-2 rounded text-[#00ff66] font-bold">
+                                GameShell + Nom + Prénom + Classe
+                            </div>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] p-4 rounded-lg space-y-2">
+                            <div class="font-bold text-[#00ff66]">2. CONTENU DEMANDÉ</div>
+                            <ul class="list-disc pl-4 space-y-1 text-slate-300">
+                                <li>Listez les <strong>commandes utilisées</strong> pour chaque mission.</li>
+                                <li>Donnez en <strong>quelques mots seulement</strong> leur utilisation.</li>
+                                <li>Faites des <strong>captures d'écran</strong> de votre progression.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#162235] p-4 rounded-lg space-y-2">
+                            <div class="font-bold text-[#ffb800]">3. SUPPORT D'ÉVALUATION</div>
+                            <p class="text-slate-300 leading-relaxed">
+                                Remettez votre Google Doc au format <strong>PDF</strong> dans la Classroom avant l'évaluation finale. Il vous servira de support pour refaire les missions depuis le début.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="bg-[#040810] border border-[#162235] rounded-lg p-3.5">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-300">MODÈLE DE PRÉSENTATION POUR VOTRE GOOGLE DOC :</span>
+                            <button onclick="copyText(document.getElementById('docSample').textContent, this)" class="text-xs px-2.5 py-1 bg-[#00f0ff]/20 border border-[#00f0ff] text-[#00f0ff] hover:bg-[#00f0ff] hover:text-black rounded transition">Copier le modèle</button>
+                        </div>
+                        <pre id="docSample" class="text-xs text-slate-400 bg-black p-3 rounded border border-[#162235] overflow-x-auto">=== MISSION 01 ===
+Commande(s) : ls / cd lieu
+Utilisation : Lister les éléments et entrer dans le répertoire demandé.
+[Coller ici la capture d'écran de validation gsh check]
+
+=== MISSION 02 ===
+Commande(s) : mkdir cabane
+Utilisation : Créer un répertoire nommé cabane.
+[Coller ici la capture d'écran de validation gsh check]</pre>
+                    </div>
+                </div>
+
+                <!-- CHEAT SHEET COMMANDES UNIX -->
+                <div class="soc-panel rounded-xl p-5 space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#162235] pb-3">
+                        <h3 class="text-sm md:text-base font-bold text-[#00ff66]">📘 CHEAT SHEET COMMANDES SHELL UNIX / LINUX</h3>
+                        <input type="text" id="cheatFilterInput" oninput="renderCheatSheet()" placeholder="Filtrer une commande..." class="bg-[#040810] border border-[#162235] focus:border-[#00ff66] rounded-lg px-3 py-1.5 text-xs text-white outline-none">
+                    </div>
+                    <div id="cheatSheetContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5"></div>
+                </div>
+            </section>
+
+            <!-- ===================================================== -->
+            <!-- SECTION 4 : TERMINAL INTERACTIF                       -->
+            <!-- ===================================================== -->
+            <section id="sec-terminal" class="hidden space-y-4">
+                <div class="soc-panel rounded-xl overflow-hidden border-[#00ff66]/40">
+                    <div class="bg-[#0a1220] px-4 py-2.5 border-b border-[#162235] flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-[#ff0055]"></span>
+                            <span class="w-3 h-3 rounded-full bg-[#ffb800]"></span>
+                            <span class="w-3 h-3 rounded-full bg-[#00ff66]"></span>
+                            <span class="ml-2 text-xs text-slate-300 font-bold">userX@prociel.cloud: ~/gameshell (SIMULATEUR)</span>
+                        </div>
+                        <button onclick="resetTerminal()" class="text-xs px-2.5 py-1 bg-[#162235] hover:bg-[#ff0055] hover:text-white rounded transition">Réinitialiser</button>
+                    </div>
+
+                    <div class="bg-[#040810] px-4 py-2.5 border-b border-[#162235] flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <div>
+                            <span class="text-[#00ff66] font-bold">MISSION ACTUELLE :</span>
+                            <span id="simChallengeText" class="text-slate-200">Créez un dossier "coffre", déplacez-y le fichier "piece_or" puis validez avec "gsh check".</span>
+                        </div>
+                        <button onclick="nextSimChallenge()" class="px-2.5 py-1 bg-[#00f0ff]/20 border border-[#00f0ff] text-[#00f0ff] hover:bg-[#00f0ff] hover:text-black rounded transition">Mission suivante ➔</button>
+                    </div>
+
+                    <div id="termOutput" onclick="document.getElementById('termInput').focus()" class="p-4 h-80 overflow-y-auto bg-black/95 text-xs md:text-sm space-y-1.5 cursor-text">
+                        <div class="text-[#00ff66]">[SOC TERMINAL] Environnement d'entraînement GameShell initialisé.</div>
+                        <div class="text-slate-400">Commandes disponibles : <span class="text-white">pwd, ls, ls -a, cd, mkdir, touch, cp, mv, rm, cat, gsh goal, gsh check, gsh help, clear</span></div>
+                        <div class="text-slate-600">--------------------------------------------------------------------------------</div>
+                    </div>
+
+                    <div class="bg-black px-4 py-3 border-t border-[#162235] flex items-center gap-2 text-xs md:text-sm">
+                        <span id="termPrompt" class="text-[#00ff66] font-bold shrink-0">userX@gsh:~/chateau$</span>
+                        <input type="text" id="termInput" onkeydown="onTermKeyDown(event)" autocomplete="off" spellcheck="false" placeholder="Entrez une commande Linux..." class="w-full bg-transparent text-white outline-none">
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===================================================== -->
+            <!-- SECTION 5 : BARÈME & SIMULATEUR DE NOTE               -->
+            <!-- ===================================================== -->
+            <section id="sec-notation" class="hidden space-y-6">
+                
+                <!-- PALIERS OFFICIELS -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="soc-panel rounded-xl p-5 border-t-4 border-t-slate-500 text-center space-y-1.5">
+                        <div class="text-[11px] text-slate-400 uppercase">DÉPART</div>
+                        <div class="text-xl font-cyber font-bold text-white">NIVEAU 1</div>
+                        <div class="text-3xl font-cyber font-black text-slate-400">0 / 20</div>
+                        <p class="text-xs text-slate-400">+1 point par niveau validé jusqu'au niveau 21.</p>
+                    </div>
+
+                    <div class="soc-panel rounded-xl p-5 border-t-4 border-t-[#00ff66] text-center space-y-1.5 shadow-[0_0_24px_rgba(0,255,102,0.1)]">
+                        <div class="text-[11px] text-[#00ff66] font-bold uppercase">NOTE MAXIMALE</div>
+                        <div class="text-xl font-cyber font-bold text-white">NIVEAU 21</div>
+                        <div class="text-3xl font-cyber font-black text-[#00ff66] glow-green">20 / 20</div>
+                        <p class="text-xs text-slate-300">Note de 20/20 atteinte dès le niveau 21.</p>
+                    </div>
+
+                    <div class="soc-panel rounded-xl p-5 border-t-4 border-t-[#ffb800] text-center space-y-1.5 shadow-[0_0_24px_rgba(255,184,0,0.1)]">
+                        <div class="text-[11px] text-[#ffb800] font-bold uppercase">BONUS EXCELLENCE</div>
+                        <div class="text-xl font-cyber font-bold text-white">NIVEAU 45</div>
+                        <div class="text-3xl font-cyber font-black text-[#ffb800] glow-amber">20/20 + 20/20</div>
+                        <p class="text-xs text-slate-300">Un deuxième 20/20 est attribué uniquement au niveau 45.</p>
+                    </div>
+                </div>
+
+                <!-- SIMULATEUR DE NOTE (UNIQUEMENT BASÉ SUR LE NIVEAU ATTEINT) -->
+                <div class="soc-panel rounded-xl p-6 space-y-5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#162235] pb-3">
+                        <div>
+                            <h3 class="text-sm md:text-base font-bold text-[#00f0ff]">🧮 SIMULATEUR DE NOTE GAMESHELL</h3>
+                            <p class="text-xs text-slate-400">Calcul basé uniquement sur le niveau atteint dans GameShell.</p>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 rounded bg-[#040810] border border-[#162235] text-slate-300">Niv. 1 = 0 | Niv. 21 = 20 | Niv. 45 = 20 + 20</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                        <div class="lg:col-span-2 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <label for="levelRange" class="text-xs md:text-sm font-bold text-white">Niveau atteint dans le jeu :</label>
+                                <span id="rangeLevelDisplay" class="px-3 py-1 rounded bg-[#00ff66]/15 border border-[#00ff66] text-[#00ff66] text-xs font-bold">Niveau 21</span>
+                            </div>
+                            <input type="range" id="levelRange" min="1" max="45" value="21" oninput="updateGradeCalc()" class="w-full">
+                            <div class="flex justify-between text-[11px] text-slate-500">
+                                <span>Niv. 1 (0/20)</span>
+                                <span>Niv. 11 (10/20)</span>
+                                <span class="text-[#00ff66] font-bold">Niv. 21 (20/20)</span>
+                                <span>Niv. 33</span>
+                                <span class="text-[#ffb800] font-bold">Niv. 45 (20+20)</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-[#040810] border border-[#00f0ff]/40 rounded-xl p-5 text-center space-y-2">
+                            <div class="text-[11px] text-slate-400 uppercase">NOTE OBTENUE</div>
+                            <div id="calcGradeValue" class="text-3xl font-cyber font-black text-[#00ff66] glow-green">20 / 20</div>
+                            <div id="calcBonusTag" class="hidden inline-block px-2.5 py-0.5 rounded bg-[#ffb800]/20 border border-[#ffb800] text-[#ffb800] text-[11px] font-bold">
+                                + DEUXIÈME NOTE : 20 / 20 !
+                            </div>
+                            <p id="calcGradeInfo" class="text-xs text-slate-400">Niveau 21 atteint : 20/20 validé !</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- POINTS DE CONTRÔLE AVANT REMISE DU PDF -->
+                <div class="soc-panel rounded-xl p-5 space-y-4">
+                    <h3 class="text-sm font-bold text-white">📋 POINTS DE CONTRÔLE AVANT REMISE DU PDF SUR CLASSROOM</h3>
                     <div class="overflow-x-auto">
-                        <table class="w-full border-collapse border border-soc-border text-left">
+                        <table class="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr class="bg-black text-soc-cyan font-bold border-b border-soc-border">
-                                    <th class="p-3 border-r border-soc-border">Compétence CIEL</th>
-                                    <th class="p-3 border-r border-soc-border">Indicateurs de Réussite</th>
-                                    <th class="p-3 border-r border-soc-border">Critères d'Évaluation</th>
-                                    <th class="p-3">Pondération</th>
+                                <tr class="border-b border-[#162235] text-[#00f0ff]">
+                                    <th class="py-2.5 px-3">Critère vérifié</th>
+                                    <th class="py-2.5 px-3">Attendu BAC Pro CIEL</th>
+                                    <th class="py-2.5 px-3 text-right">Fait</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-soc-border bg-soc-panel/50">
+                            <tbody class="divide-y divide-[#162235]/60 text-slate-300">
                                 <tr>
-                                    <td class="p-3 border-r border-soc-border font-bold text-white">C1 : Configuration & Shell</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-300">Exécution exacte des commandes Unix dans l'environnement virtuel.</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-400">Validation systématique des niveaux avec <code class="text-soc-green">gsh check</code>.</td>
-                                    <td class="p-3 font-bold text-soc-green">Barème Progression (Niv. 1 à 45)</td>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Nom du fichier PDF</td>
+                                    <td class="py-2.5 px-3"><code class="text-[#00ff66]">GameShell Nom Prénom Classe.pdf</code> remis avant l'évaluation finale</td>
+                                    <td class="py-2.5 px-3 text-right"><input type="checkbox" class="accent-[#00ff66] w-4 h-4"></td>
                                 </tr>
                                 <tr>
-                                    <td class="p-3 border-r border-soc-border font-bold text-white">C2 : Exploitation & Logs</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-300">Utilisation pertinente des outils de recherche (grep, find, redirection).</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-400">Capacité à isoler les éléments demandés sans aide extérieure.</td>
-                                    <td class="p-3 font-bold text-soc-cyan">Compris dans les missions</td>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Commandes & Utilité</td>
+                                    <td class="py-2.5 px-3">Chaque mission comporte les commandes utilisées et leur rôle en quelques mots</td>
+                                    <td class="py-2.5 px-3 text-right"><input type="checkbox" class="accent-[#00ff66] w-4 h-4"></td>
                                 </tr>
                                 <tr>
-                                    <td class="p-3 border-r border-soc-border font-bold text-white">C3 : Documentation Technique</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-300">Rédaction claire du compte-rendu d'intervention sous Google Doc/PDF.</td>
-                                    <td class="p-3 border-r border-soc-border text-slate-400">Respect du nommage <code class="text-soc-yellow">GameShell+Nom+Prénom+Classe</code>, captures d'écran lisibles et explications exactes.</td>
-                                    <td class="p-3 font-bold text-soc-yellow">Ajustement Qualité (+/- 3 pts)</td>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Captures d'écran</td>
+                                    <td class="py-2.5 px-3">Captures d'écran montrant votre progression et les validations <code class="text-[#00f0ff]">gsh check</code></td>
+                                    <td class="py-2.5 px-3 text-right"><input type="checkbox" class="accent-[#00ff66] w-4 h-4"></td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 px-3 font-semibold text-white">Sauvegarde serveur</td>
+                                    <td class="py-2.5 px-3">Fichier <code class="text-[#ffb800]">gameshell-save.sh</code> généré proprement via <code class="text-white">gsh exit</code></td>
+                                    <td class="py-2.5 px-3 text-right"><input type="checkbox" class="accent-[#00ff66] w-4 h-4"></td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
-
             </section>
-
-        </div>
 
     </main>
 
-    <footer class="border-t border-soc-border bg-black py-6 mt-12 text-center text-xs text-slate-500 font-mono">
-        <div class="max-w-7xl mx-auto px-4 space-y-2">
-            <div class="flex justify-center items-center gap-4 text-slate-400 flex-wrap">
-                <span><i class="fa-solid fa-server text-soc-green mr-1"></i> SERVEUR: prociel.cloud</span>
-                <span>•</span>
-                <span><i class="fa-solid fa-graduation-cap text-soc-cyan mr-1"></i> BAC PRO CIEL</span>
-                <span>•</span>
-                <span><i class="fa-solid fa-shield-halved text-soc-purple mr-1"></i> GAMESHELL ACADEMY</span>
-            </div>
-            <p class="text-slate-600">Application pédagogique conçue pour l'apprentissage du Shell Unix et la cybersécurité en BAC Pro CIEL.</p>
+    <!-- FOOTER -->
+    <footer class="border-t border-[#162235] bg-[#03060c]/90 py-4 px-4 text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>BAC PRO CIEL // MANUEL TACTIQUE GAMESHELL</span>
+            <span>SERVEUR : <span class="text-[#00f0ff]">prociel.cloud</span> | LANCEMENT : <span class="text-[#00ff66]">bash gameshell.sh</span></span>
         </div>
     </footer>
 
+    <!-- SCRIPTS -->
     <script>
-        // Web Audio SFX & Ambient Lo-Fi Cyber Synth
-        let audioEnabled = false;
-        let audioCtx = null;
-        let musicInterval = null;
-        let masterMusicGain = null;
-        let stepIndex = 0;
+        // ==========================================
+        // 1. EFFET MATRIX RAIN EN ARRIÈRE-PLAN
+        // ==========================================
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ$+-*/=%"\'#&_(),.;:?!\\|{}<>[]^~';
+        const fontSize = 14;
+        let columns = Math.floor(width / fontSize);
+        let drops = Array(columns).fill(1);
 
-        function initAudioContext() {
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            columns = Math.floor(width / fontSize);
+            drops = Array(columns).fill(1);
+        });
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(2, 4, 8, 0.08)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 55);
+
+        // ==========================================
+        // 2. NAVIGATION ENTRE SECTIONS
+        // ==========================================
+        function switchSection(sec) {
+            ['briefing', 'missions', 'cheatsheet', 'terminal', 'notation'].forEach(id => {
+                document.getElementById('sec-' + id).classList.add('hidden');
+                const nav = document.getElementById('nav-' + id);
+                nav.classList.remove('active');
+                nav.classList.add('text-slate-400');
+            });
+            document.getElementById('sec-' + sec).classList.remove('hidden');
+            const activeNav = document.getElementById('nav-' + sec);
+            activeNav.classList.add('active');
+            activeNav.classList.remove('text-slate-400');
+            playClickFx();
+        }
+
+        // ==========================================
+        // 3. CALCULATEUR USERX & COPIE PRESSE-PAPIERS
+        // ==========================================
+        function updateUserLogin() {
+            const val = document.getElementById('ipInput').value.trim();
+            let octet = 'X';
+            if (val) {
+                if (val.includes('.')) {
+                    const parts = val.split('.').filter(p => p !== '');
+                    const last = parts[parts.length - 1];
+                    if (/^\d{1,3}$/.test(last)) octet = last;
+                } else if (/^\d{1,3}$/.test(val)) {
+                    octet = val;
+                }
+            }
+            const login = 'user' + octet;
+            document.getElementById('computedLogin').textContent = login;
+            document.getElementById('sshDirectCmd').textContent = `ssh ${login}@prociel.cloud`;
+        }
+
+        function copyComputedLogin(btn) {
+            copyText(document.getElementById('computedLogin').textContent, btn);
+        }
+
+        function copyText(text, btn) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+            playClickFx();
+            if (btn) {
+                const orig = btn.textContent;
+                btn.textContent = '✓ Copié';
+                setTimeout(() => btn.textContent = orig, 1300);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        // ==========================================
+        // 4. DONNÉES MISSIONS (1 À 45) & CHEAT SHEET
+        // ==========================================
+        const missionsList = [
+            { num: 1, tier: 'base', title: 'Exploration & Déplacement', goal: 'Se déplacer dans le lieu indiqué et valider.', hint: 'Utilisez ls pour lister les répertoires et cd <dossier> pour entrer.', cmd: 'ls && cd <dossier>' },
+            { num: 2, tier: 'base', title: 'Retour répertoire parent', goal: 'Revenir au lieu précédent ou à la racine.', hint: 'Le double point ".." représente le répertoire parent.', cmd: 'cd ..' },
+            { num: 3, tier: 'base', title: 'Création de répertoire', goal: 'Construire une cabane (créer un dossier).', hint: 'mkdir crée un nouveau répertoire.', cmd: 'mkdir cabane' },
+            { num: 4, tier: 'base', title: 'Création de fichier', goal: 'Créer un objet (fichier) dans le lieu actuel.', hint: 'La commande touch crée un fichier vide.', cmd: 'touch <fichier>' },
+            { num: 5, tier: 'base', title: 'Déplacement & Renommage', goal: 'Mettre les pièces dans le coffre.', hint: 'mv déplace un fichier vers un répertoire ou le renomme.', cmd: 'mv piece coffre/' },
+            { num: 6, tier: 'base', title: 'Copie de fichiers', goal: 'Dupliquer un objet sans supprimer l’original.', hint: 'cp <source> <destination> copie un fichier.', cmd: 'cp cle copie_cle' },
+            { num: 7, tier: 'base', title: 'Suppression de fichiers', goal: 'Supprimer les fichiers indésirables.', hint: 'rm supprime un ou plusieurs fichiers.', cmd: 'rm dechet*' },
+            { num: 8, tier: 'base', title: 'Suppression de dossiers', goal: 'Détruire un répertoire et son contenu.', hint: 'rm -r supprime récursivement un répertoire.', cmd: 'rm -r <dossier>' },
+            { num: 9, tier: 'base', title: 'Fichiers cachés', goal: 'Trouver un objet ou passage caché.', hint: 'Les fichiers cachés commencent par un point (.).', cmd: 'ls -a' },
+            { num: 10, tier: 'base', title: 'Lecture de fichier', goal: 'Lire le contenu d’un parchemin.', hint: 'cat affiche le contenu d’un fichier dans le terminal.', cmd: 'cat parchemin.txt' },
+            { num: 11, tier: 'inter', title: 'Jokers (*)', goal: 'Déplacer tous les fichiers partageant une extension ou un préfixe.', hint: 'L’astérisque * remplace n’importe quelle chaîne de caractères.', cmd: 'mv *.piece coffre/' },
+            { num: 12, tier: 'inter', title: 'Arborescence récursive', goal: 'Lister tous les sous-répertoires d’un coup.', hint: 'Utilisez l’option -R sur ls.', cmd: 'ls -R' },
+            { num: 13, tier: 'inter', title: 'Copie récursive', goal: 'Copier un dossier entier et ses sous-fichiers.', hint: 'Ajoutez -r à la commande cp.', cmd: 'cp -r dossier1 dossier2' },
+            { num: 14, tier: 'inter', title: 'Début / Fin de fichier', goal: 'Afficher les premières ou dernières lignes d’un grimoire.', hint: 'head -n X ou tail -n X.', cmd: 'head -n 5 livre.txt' },
+            { num: 15, tier: 'inter', title: 'Filtrage de texte (grep)', goal: 'Trouver un mot-clé dans un fichier volumineux.', hint: 'grep recherche une chaîne de caractères dans un fichier.', cmd: 'grep "mot" fichier.txt' },
+            { num: 16, tier: 'inter', title: 'Redirection (>)', goal: 'Écrire une sortie de commande dans un fichier.', hint: 'Le chevron > redirige le résultat vers un fichier.', cmd: 'echo "texte" > fichier.txt' },
+            { num: 17, tier: 'inter', title: 'Ajout en fin de fichier (>>)', goal: 'Ajouter du texte à la suite sans écraser.', hint: 'Utilisez le double chevron >>.', cmd: 'cat note >> journal.txt' },
+            { num: 18, tier: 'inter', title: 'Tubes / Pipes (|)', goal: 'Enchaîner deux commandes Linux.', hint: 'Le pipe | transmet la sortie de la 1ère commande à la 2ème.', cmd: 'ls -l | grep "cle"' },
+            { num: 19, tier: 'inter', title: 'Comptage (wc -l)', goal: 'Compter le nombre d’éléments ou de lignes.', hint: 'wc -l compte les lignes reçues.', cmd: 'ls | wc -l' },
+            { num: 20, tier: 'inter', title: 'Recherche avancée (find)', goal: 'Localiser un fichier dans toute l’arborescence.', hint: 'find . -name "motif" parcourt tous les sous-dossiers.', cmd: 'find . -name "*tresor*"' },
+            { num: 21, tier: 'inter', title: 'Palier 20/20 : Permissions', goal: 'Rendre un script exécutable avec chmod.', hint: 'chmod +x donne le droit d’exécution.', cmd: 'chmod +x script.sh' },
+            { num: 25, tier: 'expert', title: 'Liens symboliques & Variables', goal: 'Créer un lien symbolique (ln -s) ou définir une variable.', hint: 'ln -s <cible> <raccourci> et export VAR=VAL.', cmd: 'ln -s cible raccourci' },
+            { num: 30, tier: 'expert', title: 'Processus (ps / kill)', goal: 'Identifier et stopper un processus bloquant.', hint: 'ps aux liste les processus, kill <PID> les arrête.', cmd: 'ps aux | grep monstre && kill <PID>' },
+            { num: 35, tier: 'expert', title: 'Archives tar.gz', goal: 'Extraire une archive compressée.', hint: 'tar -xzvf archive.tar.gz.', cmd: 'tar -xzvf coffre.tar.gz' },
+            { num: 45, tier: 'expert', title: 'Palier Ultime (Deuxième 20/20)', goal: 'Combiner find, grep, pipes et redirections pour résoudre l’épreuve finale.', hint: 'Utilisez find . -type f -exec grep -H "secret" {} +', cmd: 'find . -type f -exec grep -H "secret" {} +' }
+        ];
+
+        const cheatList = [
+            { cmd: 'pwd', desc: 'Affiche le chemin du répertoire courant.' },
+            { cmd: 'ls -la', desc: 'Liste tous les fichiers (y compris cachés) en détail.' },
+            { cmd: 'cd <dossier>', desc: 'Change de répertoire (cd .. pour remonter).' },
+            { cmd: 'mkdir <nom>', desc: 'Crée un nouveau répertoire.' },
+            { cmd: 'touch <fichier>', desc: 'Crée un fichier vide.' },
+            { cmd: 'cp -r <src> <dst>', desc: 'Copie un fichier ou un répertoire.' },
+            { cmd: 'mv <src> <dst>', desc: 'Déplace ou renomme un fichier/dossier.' },
+            { cmd: 'rm -r <cible>', desc: 'Supprime un fichier ou un dossier.' },
+            { cmd: 'cat <fichier>', desc: 'Affiche le contenu d’un fichier.' },
+            { cmd: 'grep "mot" <fich>', desc: 'Recherche un mot dans un fichier.' },
+            { cmd: 'find . -name "*"', desc: 'Recherche un fichier dans l’arborescence.' },
+            { cmd: 'chmod +x <fich>', desc: 'Ajoute le droit d’exécution à un script.' }
+        ];
+
+        let activeMissionTier = 'all';
+
+        function setMissionTier(tier) {
+            activeMissionTier = tier;
+            document.querySelectorAll('.tier-btn').forEach(b => {
+                b.className = 'tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#040810] border border-[#162235] text-slate-300';
+            });
+            document.getElementById('tier-' + tier).className = 'tier-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-[#00ff66] text-black';
+            renderMissions();
+        }
+
+        function renderMissions() {
+            const q = document.getElementById('missionFilterInput').value.toLowerCase();
+            const grid = document.getElementById('missionsGrid');
+            grid.innerHTML = '';
+
+            const filtered = missionsList.filter(m => {
+                const tierOk = activeMissionTier === 'all' || m.tier === activeMissionTier;
+                const textOk = m.title.toLowerCase().includes(q) || m.goal.toLowerCase().includes(q) || m.cmd.toLowerCase().includes(q) || ('mission ' + m.num).includes(q) || ('niveau ' + m.num).includes(q);
+                return tierOk && textOk;
+            });
+
+            filtered.forEach(m => {
+                let badge = 'border-[#00ff66] text-[#00ff66] bg-[#00ff66]/10';
+                if (m.tier === 'inter') badge = 'border-[#00f0ff] text-[#00f0ff] bg-[#00f0ff]/10';
+                if (m.tier === 'expert') badge = 'border-[#ffb800] text-[#ffb800] bg-[#ffb800]/10';
+
+                const card = document.createElement('div');
+                card.className = 'soc-panel rounded-xl p-4 space-y-3 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2 py-0.5 rounded border text-xs font-bold ${badge}">MISSION ${m.num}</span>
+                            <span class="text-xs text-slate-400 font-semibold">${m.title}</span>
+                        </div>
+                        <p class="text-xs text-slate-300">${m.goal}</p>
+                        <div class="text-[11px] text-slate-400 bg-[#040810] p-2 rounded border border-[#162235]">
+                            💡 <span class="text-slate-300">Indice :</span> ${m.hint}
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-[#162235] flex items-center justify-between gap-2">
+                        <code id="msol-${m.num}" class="hidden text-xs text-[#00ff66] font-bold bg-black px-2 py-1 rounded border border-[#00ff66]/40">${m.cmd}</code>
+                        <span id="mmask-${m.num}" class="text-[11px] text-slate-500 italic">Commande masquée</span>
+                        <button onclick="toggleMissionSol(${m.num}, this)" class="text-xs px-2.5 py-1 rounded bg-[#162235] hover:bg-[#00f0ff] hover:text-black text-slate-200 transition shrink-0">
+                            👁️ Déverrouiller
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleMissionSol(num, btn) {
+            const sol = document.getElementById('msol-' + num);
+            const mask = document.getElementById('mmask-' + num);
+            if (sol.classList.contains('hidden')) {
+                sol.classList.remove('hidden');
+                mask.classList.add('hidden');
+                btn.textContent = '🙈 Masquer';
+            } else {
+                sol.classList.add('hidden');
+                mask.classList.remove('hidden');
+                btn.textContent = '👁️ Déverrouiller';
+            }
+            playClickFx();
+        }
+
+        function renderCheatSheet() {
+            const q = document.getElementById('cheatFilterInput').value.toLowerCase();
+            const container = document.getElementById('cheatSheetContainer');
+            container.innerHTML = '';
+
+            cheatList.filter(c => c.cmd.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)).forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'bg-[#040810] border border-[#162235] hover:border-[#00ff66] p-3.5 rounded-lg flex flex-col justify-between gap-2 transition';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <code class="text-xs md:text-sm font-bold text-[#00ff66]">${c.cmd}</code>
+                        <button onclick="copyText('${c.cmd.replace(/'/g, "\\'")}', this)" class="text-[10px] px-2 py-0.5 bg-[#162235] hover:bg-[#00ff66] hover:text-black rounded">Copier</button>
+                    </div>
+                    <p class="text-xs text-slate-400">${c.desc}</p>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // ==========================================
+        // 5. RECHERCHE GLOBALE EN TEMPS RÉEL (HEADER)
+        // ==========================================
+        function handleGlobalSearch() {
+            const q = document.getElementById('globalSearchInput').value.trim().toLowerCase();
+            const panel = document.getElementById('globalSearchResultsPanel');
+            const list = document.getElementById('globalSearchList');
+            const clearBtn = document.getElementById('clearGlobalSearchBtn');
+
+            if (!q) {
+                panel.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+            panel.classList.remove('hidden');
+            list.innerHTML = '';
+
+            const results = [];
+
+            // Indexation consignes & gsh
+            const staticEntries = [
+                { tag: 'CONNEXION', title: 'Serveur PuTTY / SSH', desc: 'Host: prociel.cloud | Type: SSH | Login: userX | Mdp: eleve', action: () => switchSection('briefing') },
+                { tag: 'LANCEMENT', title: 'Démarrer GameShell', desc: 'Commande : bash gameshell.sh puis Option 1', action: () => switchSection('briefing') },
+                { tag: 'SAUVEGARDE', title: 'Sauvegarder & Reprendre', desc: 'gsh exit génère gameshell-save.sh (bash gameshell-save.sh)', action: () => switchSection('briefing') },
+                { tag: 'GSH', title: 'gsh goto <niveau> & gsh skip', desc: 'Atteindre un niveau ou passer le niveau (Mot de passe : gsh)', action: () => switchSection('briefing') },
+                { tag: 'RAPPORT', title: 'Google Doc / PDF Classroom', desc: 'Titre : GameShell + Nom + Prénom + Classe (format PDF)', action: () => switchSection('cheatsheet') },
+                { tag: 'NOTATION', title: 'Barème : Niv. 1=0, Niv. 21=20, Niv. 45=20+20', desc: 'Deuxième 20/20 attribué uniquement au niveau 45.', action: () => switchSection('notation') }
+            ];
+
+            staticEntries.forEach(e => {
+                if (e.title.toLowerCase().includes(q) || e.desc.toLowerCase().includes(q) || e.tag.toLowerCase().includes(q)) {
+                    results.push(e);
+                }
+            });
+
+            cheatList.forEach(c => {
+                if (c.cmd.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)) {
+                    results.push({
+                        tag: 'COMMANDE',
+                        title: c.cmd,
+                        desc: c.desc,
+                        action: () => { switchSection('cheatsheet'); }
+                    });
+                }
+            });
+
+            missionsList.forEach(m => {
+                if (('mission ' + m.num).includes(q) || ('niveau ' + m.num).includes(q) || m.title.toLowerCase().includes(q) || m.cmd.toLowerCase().includes(q)) {
+                    results.push({
+                        tag: 'MISSION ' + m.num,
+                        title: m.title + ' (' + m.cmd + ')',
+                        desc: m.goal,
+                        action: () => { switchSection('missions'); }
+                    });
+                }
+            });
+
+            document.getElementById('globalSearchCount').textContent = results.length;
+
+            if (results.length === 0) {
+                list.innerHTML = `<div class="col-span-3 text-xs text-slate-500 py-3 text-center">Aucun résultat trouvé pour "${q}".</div>`;
+                return;
+            }
+
+            results.forEach(r => {
+                const card = document.createElement('div');
+                card.className = 'bg-[#040810] border border-[#162235] hover:border-[#00f0ff] p-3 rounded-lg cursor-pointer transition space-y-1';
+                card.onclick = () => { r.action(); clearGlobalSearch(); };
+                card.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#00ff66]/15 text-[#00ff66]">${r.tag}</span>
+                        <span class="text-[10px] text-[#00f0ff]">Ouvrir ➔</span>
+                    </div>
+                    <div class="text-xs font-bold text-white truncate">${r.title}</div>
+                    <div class="text-[11px] text-slate-400 line-clamp-2">${r.desc}</div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function clearGlobalSearch() {
+            document.getElementById('globalSearchInput').value = '';
+            document.getElementById('globalSearchResultsPanel').classList.add('hidden');
+            document.getElementById('clearGlobalSearchBtn').classList.add('hidden');
+        }
+
+        // ==========================================
+        // 6. SIMULATEUR DE TERMINAL INTERACTIF
+        // ==========================================
+        let simEnv = {
+            cwd: '/chateau',
+            dirs: ['/chateau', '/chateau/tour'],
+            files: {
+                '/chateau/piece_or': 'Une pièce d’or ancienne.',
+                '/chateau/.secret': 'MOT_DE_PASSE = gsh',
+                '/chateau/tour/parchemin.txt': 'Félicitations ! Tu maîtrises le déplacement et la lecture.'
+            },
+            idx: 0,
+            readSecret: false,
+            readScroll: false
+        };
+
+        const simMissions = [
+            {
+                text: 'Créez un dossier "coffre", déplacez-y le fichier "piece_or" puis validez avec "gsh check".',
+                check: () => simEnv.dirs.includes('/chateau/coffre') && simEnv.files['/chateau/coffre/piece_or'] !== undefined
+            },
+            {
+                text: 'Listez les fichiers cachés (ls -a) dans /chateau et lisez ".secret" avec cat, puis tapez "gsh check".',
+                check: () => simEnv.readSecret
+            },
+            {
+                text: 'Entrez dans "tour" et affichez le contenu de "parchemin.txt", puis tapez "gsh check".',
+                check: () => simEnv.readScroll
+            }
+        ];
+
+        function resetTerminal() {
+            simEnv = {
+                cwd: '/chateau',
+                dirs: ['/chateau', '/chateau/tour'],
+                files: {
+                    '/chateau/piece_or': 'Une pièce d’or ancienne.',
+                    '/chateau/.secret': 'MOT_DE_PASSE = gsh',
+                    '/chateau/tour/parchemin.txt': 'Félicitations ! Tu maîtrises le déplacement et la lecture.'
+                },
+                idx: 0,
+                readSecret: false,
+                readScroll: false
+            };
+            document.getElementById('simChallengeText').textContent = simMissions[0].text;
+            document.getElementById('termOutput').innerHTML = `<div class="text-[#00ff66]">Terminal réinitialisé. Tapez "ls" pour commencer.</div>`;
+            document.getElementById('termPrompt').textContent = `userX@gsh:~${simEnv.cwd}$`;
+        }
+
+        function nextSimChallenge() {
+            simEnv.idx = (simEnv.idx + 1) % simMissions.length;
+            document.getElementById('simChallengeText').textContent = simMissions[simEnv.idx].text;
+            appendTerm(`Nouvelle mission : ${simMissions[simEnv.idx].text}`, 'text-[#00f0ff]');
+        }
+
+        function appendTerm(txt, cls = 'text-slate-300') {
+            const out = document.getElementById('termOutput');
+            const div = document.createElement('div');
+            div.className = cls;
+            div.textContent = txt;
+            out.appendChild(div);
+            out.scrollTop = out.scrollHeight;
+        }
+
+        function resolveSimPath(p) {
+            if (!p || p === '.') return simEnv.cwd;
+            if (p === '..') {
+                if (simEnv.cwd === '/chateau') return '/chateau';
+                const arr = simEnv.cwd.split('/');
+                arr.pop();
+                return arr.join('/') || '/chateau';
+            }
+            if (p.startsWith('/')) return p.replace(/\/$/, '');
+            return (simEnv.cwd + '/' + p).replace(/\/+/g, '/').replace(/\/$/, '');
+        }
+
+        function onTermKeyDown(e) {
+            if (e.key !== 'Enter') return;
+            const inp = document.getElementById('termInput');
+            const raw = inp.value.trim();
+            inp.value = '';
+            if (!raw) return;
+
+            appendTerm(`userX@gsh:~${simEnv.cwd}$ ${raw}`, 'text-white font-semibold');
+            const parts = raw.split(/\s+/);
+            const cmd = parts[0];
+
+            if (cmd === 'clear') {
+                document.getElementById('termOutput').innerHTML = '';
+            } else if (cmd === 'pwd') {
+                appendTerm(simEnv.cwd);
+            } else if (cmd === 'ls') {
+                const all = parts.includes('-a') || parts.includes('-la') || parts.includes('-al');
+                const res = [];
+                simEnv.dirs.forEach(d => {
+                    if (d !== simEnv.cwd && d.startsWith(simEnv.cwd + '/')) {
+                        const sub = d.slice(simEnv.cwd.length + 1);
+                        if (!sub.includes('/')) res.push(sub + '/');
+                    }
+                });
+                Object.keys(simEnv.files).forEach(f => {
+                    if (f.startsWith(simEnv.cwd + '/')) {
+                        const sub = f.slice(simEnv.cwd.length + 1);
+                        if (!sub.includes('/') && (all || !sub.startsWith('.'))) res.push(sub);
+                    }
+                });
+                appendTerm(res.length ? res.join('   ') : '(répertoire vide)', 'text-[#00f0ff]');
+            } else if (cmd === 'cd') {
+                const target = resolveSimPath(parts[1] || '/chateau');
+                if (simEnv.dirs.includes(target)) {
+                    simEnv.cwd = target;
+                    document.getElementById('termPrompt').textContent = `userX@gsh:~${simEnv.cwd}$`;
+                } else {
+                    appendTerm(`cd: ${parts[1]}: Aucun dossier de ce type`, 'text-[#ff0055]');
+                }
+            } else if (cmd === 'mkdir') {
+                if (!parts[1]) return appendTerm('mkdir: opérande manquant', 'text-[#ff0055]');
+                const d = resolveSimPath(parts[1]);
+                if (!simEnv.dirs.includes(d)) {
+                    simEnv.dirs.push(d);
+                    appendTerm(`Répertoire '${parts[1]}' créé.`, 'text-[#00ff66]');
+                }
+            } else if (cmd === 'touch') {
+                if (!parts[1]) return appendTerm('touch: opérande manquant', 'text-[#ff0055]');
+                simEnv.files[resolveSimPath(parts[1])] = '';
+            } else if (cmd === 'mv') {
+                if (parts.length < 3) return appendTerm('mv: opérande manquant', 'text-[#ff0055]');
+                const s = resolveSimPath(parts[1]);
+                let d = resolveSimPath(parts[2]);
+                if (!simEnv.files.hasOwnProperty(s)) return appendTerm(`mv: fichier '${parts[1]}' introuvable`, 'text-[#ff0055]');
+                if (simEnv.dirs.includes(d)) d += '/' + s.split('/').pop();
+                simEnv.files[d] = simEnv.files[s];
+                delete simEnv.files[s];
+            } else if (cmd === 'cp') {
+                if (parts.length < 3) return appendTerm('cp: opérande manquant', 'text-[#ff0055]');
+                const s = resolveSimPath(parts[1]);
+                let d = resolveSimPath(parts[2]);
+                if (!simEnv.files.hasOwnProperty(s)) return appendTerm(`cp: fichier '${parts[1]}' introuvable`, 'text-[#ff0055]');
+                if (simEnv.dirs.includes(d)) d += '/' + s.split('/').pop();
+                simEnv.files[d] = simEnv.files[s];
+            } else if (cmd === 'rm') {
+                if (!parts[1]) return appendTerm('rm: opérande manquant', 'text-[#ff0055]');
+                const t = resolveSimPath(parts[1]);
+                if (simEnv.files.hasOwnProperty(t)) delete simEnv.files[t];
+                else appendTerm(`rm: impossible de supprimer '${parts[1]}'`, 'text-[#ff0055]');
+            } else if (cmd === 'cat') {
+                if (!parts[1]) return appendTerm('cat: opérande manquant', 'text-[#ff0055]');
+                const t = resolveSimPath(parts[1]);
+                if (simEnv.files.hasOwnProperty(t)) {
+                    appendTerm(simEnv.files[t], 'text-[#ffb800]');
+                    if (t.endsWith('.secret')) simEnv.readSecret = true;
+                    if (t.endsWith('parchemin.txt')) simEnv.readScroll = true;
+                } else {
+                    appendTerm(`cat: ${parts[1]}: Fichier introuvable`, 'text-[#ff0055]');
+                }
+            } else if (cmd === 'gsh') {
+                const sub = parts[1];
+                if (sub === 'goal') appendTerm('OBJECTIF : ' + simMissions[simEnv.idx].text, 'text-[#00f0ff]');
+                else if (sub === 'check') {
+                    if (simMissions[simEnv.idx].check()) {
+                        appendTerm('✔ MISSION VALIDÉE !', 'text-[#00ff66] font-bold');
+                        nextSimChallenge();
+                    } else {
+                        appendTerm('✘ Mission non validée. Consultez "gsh goal".', 'text-[#ff0055]');
+                    }
+                } else if (sub === 'help') appendTerm('Commandes : gsh goal | gsh check | gsh exit | gsh help | gsh goto <niv> | gsh skip (mdp: gsh)', 'text-[#ffb800]');
+                else if (sub === 'exit') appendTerm('Sauvegarde enregistrée dans gameshell-save.sh.', 'text-[#ffb800]');
+                else appendTerm('Usage : gsh [goal|check|help|exit|goto|skip]', 'text-slate-400');
+            } else {
+                appendTerm(`${cmd}: commande non reconnue`, 'text-[#ff0055]');
+            }
+        }
+
+        // ==========================================
+        // 7. SIMULATEUR DE NOTE (NIV 1=0, NIV 21=20, NIV 45=20+20)
+        // ==========================================
+        function updateGradeCalc() {
+            const lvl = parseInt(document.getElementById('levelRange').value, 10);
+            document.getElementById('rangeLevelDisplay').textContent = `Niveau ${lvl}`;
+
+            const note = Math.min(20, Math.max(0, lvl - 1));
+            const bonus20 = (lvl === 45);
+
+            const valEl = document.getElementById('calcGradeValue');
+            const tagEl = document.getElementById('calcBonusTag');
+            const infoEl = document.getElementById('calcGradeInfo');
+
+            if (bonus20) {
+                valEl.textContent = '20/20 + 20/20';
+                valEl.className = 'text-2xl md:text-3xl font-cyber font-black text-[#ffb800] glow-amber';
+                tagEl.classList.remove('hidden');
+                infoEl.textContent = 'Niveau 45 atteint : deuxième 20/20 attribué !';
+            } else {
+                valEl.textContent = `${note} / 20`;
+                tagEl.classList.add('hidden');
+                if (note === 20) {
+                    valEl.className = 'text-3xl font-cyber font-black text-[#00ff66] glow-green';
+                    infoEl.textContent = '20/20 validé ! Atteignez le niveau 45 pour un deuxième 20/20.';
+                } else if (note >= 10) {
+                    valEl.className = 'text-3xl font-cyber font-black text-[#00f0ff] glow-cyan';
+                    infoEl.textContent = `Encore ${21 - lvl} niveau(x) pour atteindre 20/20.`;
+                } else {
+                    valEl.className = 'text-3xl font-cyber font-black text-slate-300';
+                    infoEl.textContent = `Progression actuelle : ${note} point${note > 1 ? 's' : ''}.`;
+                }
+            }
+        }
+
+        // ==========================================
+        // 8. AMBIANCE MUSICALE CYBER LO-FI (WEB AUDIO API)
+        // ==========================================
+        let audioCtx = null;
+        let audioActive = false;
+        let loopTimer = null;
+        let masterOut = null;
+        let beatStep = 0;
+
+        const chords = [
+            { bass: 110.00, pad: [220.00, 261.63, 329.63, 392.00] }, // Am7
+            { bass: 87.31,  pad: [174.61, 220.00, 261.63, 329.63] }, // Fmaj7
+            { bass: 130.81, pad: [261.63, 329.63, 392.00, 493.88] }, // Cmaj7
+            { bass: 82.41,  pad: [164.81, 196.00, 246.94, 293.66] }  // Em7
+        ];
+
+        function ensureAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterOut = audioCtx.createGain();
+                masterOut.gain.value = 0.2;
+                masterOut.connect(audioCtx.destination);
             }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playSound(type) {
-            if (!audioEnabled) return;
-            try {
-                initAudioContext();
+        function triggerPad(freqs, dur) {
+            if (!audioActive || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const lpf = audioCtx.createBiquadFilter();
+            lpf.type = 'lowpass';
+            lpf.frequency.setValueAtTime(550, now);
+            lpf.frequency.linearRampToValueAtTime(820, now + dur * 0.5);
+
+            const g = audioCtx.createGain();
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.085, now + 0.7);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+
+            lpf.connect(g);
+            g.connect(masterOut);
+
+            freqs.forEach((f, i) => {
                 const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-
-                if (type === 'click') {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
-                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.05);
-                } else if (type === 'unlock') {
-                    osc.type = 'square';
-                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.08);
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.2);
-                }
-            } catch (e) { console.log(e); }
+                osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(f, now);
+                osc.detune.setValueAtTime((i - 1.5) * 4, now);
+                osc.connect(lpf);
+                osc.start(now);
+                osc.stop(now + dur);
+            });
         }
 
-        // Générateur de musique d'ambiance Cyber / Synthwave Lo-Fi douce
-        function startAmbientMusic() {
-            try {
-                initAudioContext();
-                if (musicInterval) clearInterval(musicInterval);
-
-                masterMusicGain = audioCtx.createGain();
-                masterMusicGain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-                masterMusicGain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 1.5);
-                masterMusicGain.connect(audioCtx.destination);
-
-                // Progression d'accords mineurs doux (Am9 -> Fmaj7 -> Cmaj9 -> Em7)
-                const chords = [
-                    { bass: 110.00, pad: [220.00, 261.63, 329.63, 493.88], arp: [440.00, 523.25, 659.25, 587.33] }, // Am9
-                    { bass: 87.31,  pad: [174.61, 220.00, 261.63, 329.63], arp: [349.23, 440.00, 523.25, 659.25] }, // Fmaj7
-                    { bass: 130.81, pad: [196.00, 246.94, 293.66, 329.63], arp: [392.00, 493.88, 587.33, 659.25] }, // Cmaj9
-                    { bass: 82.41,  pad: [164.81, 196.00, 246.94, 293.66], arp: [329.63, 392.00, 493.88, 587.33] }  // Em7
-                ];
-
-                stepIndex = 0;
-
-                const playStep = () => {
-                    if (!audioEnabled || !audioCtx || !masterMusicGain) return;
-                    const now = audioCtx.currentTime;
-                    const chord = chords[Math.floor(stepIndex / 8) % chords.length];
-                    const subStep = stepIndex % 8;
-
-                    // 1. Nappe d'accords doux & basse subtile tous les 8 temps (toutes les 4 secondes)
-                    if (subStep === 0) {
-                        // Basse chaude filtrée
-                        const bassOsc = audioCtx.createOscillator();
-                        const bassFilter = audioCtx.createBiquadFilter();
-                        const bassGain = audioCtx.createGain();
-
-                        bassOsc.type = 'triangle';
-                        bassOsc.frequency.setValueAtTime(chord.bass, now);
-
-                        bassFilter.type = 'lowpass';
-                        bassFilter.frequency.setValueAtTime(220, now);
-
-                        bassGain.gain.setValueAtTime(0.001, now);
-                        bassGain.gain.linearRampToValueAtTime(0.28, now + 0.6);
-                        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 4.2);
-
-                        bassOsc.connect(bassFilter);
-                        bassFilter.connect(bassGain);
-                        bassGain.connect(masterMusicGain);
-
-                        bassOsc.start(now);
-                        bassOsc.stop(now + 4.3);
-
-                        // Nappe synthétique douce (Pad)
-                        chord.pad.forEach((freq) => {
-                            const padOsc = audioCtx.createOscillator();
-                            const padFilter = audioCtx.createBiquadFilter();
-                            const padGain = audioCtx.createGain();
-
-                            padOsc.type = 'sine';
-                            padOsc.frequency.setValueAtTime(freq, now);
-
-                            padFilter.type = 'lowpass';
-                            padFilter.frequency.setValueAtTime(650, now);
-
-                            padGain.gain.setValueAtTime(0.001, now);
-                            padGain.gain.linearRampToValueAtTime(0.06, now + 1.0);
-                            padGain.gain.exponentialRampToValueAtTime(0.001, now + 4.3);
-
-                            padOsc.connect(padFilter);
-                            padFilter.connect(padGain);
-                            padGain.connect(masterMusicGain);
-
-                            padOsc.start(now);
-                            padOsc.stop(now + 4.4);
-                        });
-                    }
-
-                    // 2. Arpège léger cristallin lo-fi à chaque pas (0.5s)
-                    const arpFreq = chord.arp[subStep % chord.arp.length];
-                    const arpOsc = audioCtx.createOscillator();
-                    const arpFilter = audioCtx.createBiquadFilter();
-                    const arpGain = audioCtx.createGain();
-
-                    arpOsc.type = 'sine';
-                    arpOsc.frequency.setValueAtTime(arpFreq, now);
-
-                    arpFilter.type = 'lowpass';
-                    arpFilter.frequency.setValueAtTime(1100, now);
-
-                    arpGain.gain.setValueAtTime(0.001, now);
-                    arpGain.gain.linearRampToValueAtTime(0.045, now + 0.04);
-                    arpGain.gain.exponentialRampToValueAtTime(0.0008, now + 0.75);
-
-                    arpOsc.connect(arpFilter);
-                    arpFilter.connect(arpGain);
-                    arpGain.connect(masterMusicGain);
-
-                    arpOsc.start(now);
-                    arpOsc.stop(now + 0.8);
-
-                    stepIndex++;
-                };
-
-                playStep();
-                musicInterval = setInterval(playStep, 500); // Tempo calme ~60 BPM
-            } catch (e) {
-                console.log("Erreur audio:", e);
-            }
+        function triggerBass(freq, dur) {
+            if (!audioActive || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.15, now + 0.12);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + dur);
+            osc.connect(g);
+            g.connect(masterOut);
+            osc.start(now);
+            osc.stop(now + dur);
         }
 
-        function stopAmbientMusic() {
-            if (musicInterval) {
-                clearInterval(musicInterval);
-                musicInterval = null;
-            }
-            if (masterMusicGain && audioCtx) {
-                try {
-                    const now = audioCtx.currentTime;
-                    masterMusicGain.gain.cancelScheduledValues(now);
-                    masterMusicGain.gain.setValueAtTime(masterMusicGain.gain.value, now);
-                    masterMusicGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
-                } catch (e) {}
-            }
+        function triggerArp(freq) {
+            if (!audioActive || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const lpf = audioCtx.createBiquadFilter();
+            const g = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq * 2, now);
+            lpf.type = 'lowpass';
+            lpf.frequency.setValueAtTime(950, now);
+            g.gain.setValueAtTime(0.0001, now);
+            g.gain.linearRampToValueAtTime(0.038, now + 0.04);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+            osc.connect(lpf);
+            lpf.connect(g);
+            g.connect(masterOut);
+            osc.start(now);
+            osc.stop(now + 0.7);
         }
 
         function toggleAudio() {
-            audioEnabled = !audioEnabled;
-            const icon = document.getElementById('audio-icon');
-            if (audioEnabled) {
-                initAudioContext();
-                icon.className = "fa-solid fa-volume-high text-soc-green animate-pulse";
-                playSound('unlock');
-                startAmbientMusic();
+            audioActive = !audioActive;
+            const btn = document.getElementById('audioToggleBtn');
+            document.getElementById('audioIcon').textContent = audioActive ? '🔊' : '🔇';
+            document.getElementById('audioLabel').textContent = audioActive ? 'AUDIO: ON' : 'AUDIO: OFF';
+
+            if (audioActive) {
+                btn.classList.add('border-[#00ff66]', 'text-[#00ff66]');
+                ensureAudio();
+                beatStep = 0;
+                const step = () => {
+                    if (!audioActive) return;
+                    const cIdx = Math.floor(beatStep / 8) % chords.length;
+                    const local = beatStep % 8;
+                    const ch = chords[cIdx];
+                    if (local === 0) {
+                        triggerPad(ch.pad, 4.4);
+                        triggerBass(ch.bass, 2.2);
+                    }
+                    if (local === 4) triggerBass(ch.bass, 2.0);
+                    if (local % 2 === 1) triggerArp(ch.pad[(local + cIdx) % ch.pad.length]);
+                    beatStep++;
+                };
+                step();
+                loopTimer = setInterval(step, 550);
             } else {
-                icon.className = "fa-solid fa-volume-xmark text-soc-red";
-                stopAmbientMusic();
+                btn.classList.remove('border-[#00ff66]', 'text-[#00ff66]');
+                if (loopTimer) clearInterval(loopTimer);
             }
         }
 
-        // Tab Navigation
-        function switchTab(tabId) {
-            playSound('click');
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-
-            document.getElementById(tabId).classList.remove('hidden');
-            
-            if (tabId === 'tab-guide') document.getElementById('btn-tab-guide').classList.add('active');
-            if (tabId === 'tab-memo') document.getElementById('btn-tab-memo').classList.add('active');
-            if (tabId === 'tab-eval') document.getElementById('btn-tab-eval').classList.add('active');
+        function playClickFx() {
+            if (!audioActive || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(680, now);
+            g.gain.setValueAtTime(0.025, now);
+            g.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
+            osc.connect(g);
+            g.connect(masterOut);
+            osc.start(now);
+            osc.stop(now + 0.05);
         }
 
-        // IP / UserX calculation
-        function calculateUserX() {
-            const input = document.getElementById('ip-octet').value.trim();
-            const val = input ? parseInt(input) : 25;
-            document.getElementById('userX-result').textContent = `user${val}`;
-            const sshCmd = document.getElementById('ssh-direct-cmd');
-            if (sshCmd) sshCmd.textContent = `ssh user${val}@prociel.cloud`;
-        }
-
-        // Data: 12 Levels
-        const levels = [
-            { id: 1, title: "Niveau 1 : Reconnaissance initiale", category: "base", cmd: ["pwd", "ls"], target: "Savoir se situer et repérer les fichiers.", ind1: "Utilisez 'pwd' pour connaître le chemin courant.", ind2: "Faites 'ls' pour afficher le contenu.", solution: "pwd && ls", cielNote: "Validation de votre position de travail sous Linux." },
-            { id: 2, title: "Niveau 2 : Navigation", category: "base", cmd: ["cd", "ls"], target: "Entrer dans un répertoire de mission.", ind1: "Tapez 'cd' suivi du nom exact du dossier.", ind2: "Utilisez 'cd ..' pour reculer.", solution: "cd chateau && ls", cielNote: "~ désigne votre répertoire /home/userX." },
-            { id: 3, title: "Niveau 3 : Lecture de documents", category: "base", cmd: ["cat"], target: "Extraire le contenu d'un fichier texte.", ind1: "La commande 'cat' affiche tout le contenu.", ind2: "Exemple : 'cat parchemin.txt'.", solution: "cat ordre_de_mission.txt", cielNote: "Indispensable pour lire la configuration des fichiers système." },
-            { id: 4, title: "Niveau 4 : Création de répertoires", category: "base", cmd: ["mkdir"], target: "Créer un dossier de stockage.", ind1: "Pour créer un dossier: 'mkdir nom_dossier'.", ind2: "Vérifiez avec 'ls'.", solution: "mkdir coffre", cielNote: "Organisation de l'arborescence du serveur." },
-            { id: 5, title: "Niveau 5 : Suppression & Nettoyage", category: "base", cmd: ["rm"], target: "Eliminer un fichier piégé.", ind1: "Pour supprimer un fichier: 'rm piège.txt'.", ind2: "Attention : suppression définitive sous Linux !", solution: "rm piège.txt", cielNote: "Maintenance et purge des fichiers temporaires." },
-            { id: 6, title: "Niveau 6 : Duplication et Déplacement", category: "base", cmd: ["cp", "mv"], target: "Copier ou déplacer un élément.", ind1: "Copier : 'cp origine destination'.", ind2: "Déplacer / renommer : 'mv ancien nouveau'.", solution: "cp clef.txt coffre/", cielNote: "Toujours faire un backup d'un fichier avant modification." },
-            { id: 7, title: "Niveau 7 : Fichiers Cachés", category: "avance", cmd: ["ls -a"], target: "Débusquer les répertoires cachés.", ind1: "Les fichiers cachés commencent par un point (ex: .flag).", ind2: "Utilisez 'ls -a'.", solution: "ls -a", cielNote: "Les fichiers de conf utilisateur (ex: .bashrc) sont cachés." },
-            { id: 8, title: "Niveau 8 : Permissions & Execution", category: "avance", cmd: ["chmod"], target: "Rendre un script exécutable.", ind1: "Affichez les droits avec 'ls -l'.", ind2: "Donnez les droits d'exécution avec 'chmod +x script.sh'.", solution: "chmod +x script.sh && ./script.sh", cielNote: "Notion fondamentale de privilèges Linux (rwx)." },
-            { id: 9, title: "Niveau 9 : Filtrage de texte & LOGS", category: "avance", cmd: ["grep"], target: "Isoler un mot-clé dans un fichier.", ind1: "Utilisez 'grep \"mot\" fichier.txt'.", ind2: "L'option -i ignore les majuscules/minuscules.", solution: "grep \"PASSWORD\" journal.log", cielNote: "Utilisé quotidiennement pour analyser les logs d'attaque." },
-            { id: 10, title: "Niveau 10 : Localisation Système", category: "avance", cmd: ["find"], target: "Retrouver un fichier perdu.", ind1: "Tapez 'find . -name \"nom_fichier\"'.", ind2: "Le point '.' indique le répertoire courant.", solution: "find . -name \"flag.txt\"", cielNote: "Retrouver des exécutables disséminés sur le disque." },
-            { id: 11, title: "Niveau 11 : Édition de scripts Bash", category: "avance", cmd: ["nano"], target: "Modifier un fichier de configuration.", ind1: "Ouvrez le fichier avec 'nano script.sh'.", ind2: "Sauvegarder : Ctrl+O puis Entrée. Quitter : Ctrl+X.", solution: "nano script.sh", cielNote: "Éditeur texte indispensable lors d'une session SSH distante." },
-            { id: 12, title: "Niveau 12 : Redirection et Pipes", category: "avance", cmd: [">", "|"], target: "Chainer les commandes Unix.", ind1: "Le symbole '>' redirige vers un fichier.", ind2: "Le symbole pipe '|' transmet le résultat à la commande suivante.", solution: "cat log.txt | grep \"error\" > rapport.txt", cielNote: "Automation des tâches d'administration réseau." }
-        ];
-
-        // Data: Memo Commands
-        const memoCommands = [
-            { name: "ls", usage: "ls -la", desc: "Lister le contenu d'un répertoire (fichiers cachés inclus)." },
-            { name: "cd", usage: "cd <dossier>", desc: "Se déplacer dans l'arborescence (cd .. pour reculer)." },
-            { name: "pwd", usage: "pwd", desc: "Afficher le chemin absolu du dossier courant." },
-            { name: "cat", usage: "cat <fichier>", desc: "Afficher le contenu texte d'un fichier." },
-            { name: "mkdir", usage: "mkdir <nom>", desc: "Créer un nouveau répertoire." },
-            { name: "rm", usage: "rm <fichier>", desc: "Supprimer définitivement un fichier." },
-            { name: "cp", usage: "cp <source> <dest>", desc: "Copier un fichier ou dossier." },
-            { name: "mv", usage: "mv <source> <dest>", desc: "Déplacer ou renommer un fichier." },
-            { name: "chmod", usage: "chmod +x <script>", desc: "Modifier les autorisations d'un fichier (ex: exécutable)." },
-            { name: "grep", usage: "grep \"texte\" <fichier>", desc: "Rechercher une chaîne spécifique dans un texte/log." },
-            { name: "find", usage: "find . -name \"*.txt\"", desc: "Chercher un fichier par son nom dans les dossiers." },
-            { name: "nano", usage: "nano <fichier>", desc: "Editeur de texte dans le terminal." }
-        ];
-
-        function renderLevels(list = levels) {
-            const container = document.getElementById('levels-grid');
-            container.innerHTML = list.map(lvl => `
-                <div class="bg-soc-card border border-soc-border hover:border-soc-green/40 rounded-lg p-4 space-y-3 transition flex flex-col justify-between">
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between border-b border-soc-border pb-2">
-                            <span class="text-xs font-bold text-soc-green font-tech px-2 py-0.5 rounded bg-soc-green/10 border border-soc-green/30">
-                                MIS_${lvl.id < 10 ? '0' + lvl.id : lvl.id}
-                            </span>
-                            <span class="text-[10px] text-slate-500 font-mono uppercase">${lvl.category === 'base' ? 'Bases' : 'Avancé'}</span>
-                        </div>
-                        <h4 class="font-bold text-white text-sm font-tech">${lvl.title}</h4>
-                        <p class="text-xs text-slate-400"><strong>Objectif :</strong> ${lvl.target}</p>
-                        <div class="flex flex-wrap gap-1 pt-1">
-                            ${lvl.cmd.map(c => `<code class="bg-black text-soc-cyan px-1.5 py-0.5 rounded border border-soc-border text-[10px]">${c}</code>`).join('')}
-                        </div>
-                    </div>
-
-                    <div class="pt-3 border-t border-soc-border space-y-2">
-                        <button onclick="toggleLevelSolution(${lvl.id})" class="w-full bg-soc-panel hover:bg-black text-slate-300 hover:text-soc-green border border-soc-border py-1.5 rounded text-xs transition flex items-center justify-center gap-2 font-mono">
-                            <i class="fa-solid fa-lock text-soc-yellow" id="lock-icon-${lvl.id}"></i>
-                            <span id="btn-lvl-${lvl.id}">VOIR L'INDICE</span>
-                        </button>
-
-                        <div id="sol-box-${lvl.id}" class="hidden bg-black p-3 rounded border border-soc-green/30 text-xs space-y-2 font-mono">
-                            <div><span class="text-soc-yellow font-bold">Indice 1:</span> ${lvl.ind1}</div>
-                            <div><span class="text-soc-yellow font-bold">Indice 2:</span> ${lvl.ind2}</div>
-                            <div class="pt-1 border-t border-slate-800 text-soc-green font-bold flex items-center justify-between">
-                                <span>Solution: <code class="text-white">${lvl.solution}</code></span>
-                                <button onclick="copyToClipboard('${lvl.solution}')" class="text-slate-400 hover:text-soc-green text-[10px]"><i class="fa-regular fa-copy"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function toggleLevelSolution(id) {
-            playSound('unlock');
-            const box = document.getElementById(`sol-box-${id}`);
-            const btn = document.getElementById(`btn-lvl-${id}`);
-            const icon = document.getElementById(`lock-icon-${id}`);
-
-            if (box.classList.contains('hidden')) {
-                box.classList.remove('hidden');
-                btn.textContent = "MASQUER L'INDICE";
-                icon.className = "fa-solid fa-lock-open text-soc-green";
-            } else {
-                box.classList.add('hidden');
-                btn.textContent = "VOIR L'INDICE";
-                icon.className = "fa-solid fa-lock text-soc-yellow";
-            }
-        }
-
-        function filterLevels(cat) {
-            playSound('click');
-            document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('bg-soc-cyan/20', 'border-soc-cyan', 'text-soc-cyan'));
-            event.target.classList.add('bg-soc-cyan/20', 'border-soc-cyan', 'text-soc-cyan');
-
-            if (cat === 'all') renderLevels(levels);
-            else renderLevels(levels.filter(l => l.category === cat));
-        }
-
-        function renderMemoCommands(list = memoCommands) {
-            const container = document.getElementById('memo-grid');
-            container.innerHTML = list.map(c => `
-                <div class="bg-black/60 border border-soc-border p-4 rounded-lg space-y-2 font-mono hover:border-soc-cyan/40 transition">
-                    <div class="flex items-center justify-between border-b border-soc-border pb-2">
-                        <code class="text-base font-bold text-soc-cyan">${c.name}</code>
-                        <button onclick="copyToClipboard('${c.usage}')" class="text-slate-500 hover:text-soc-cyan text-xs">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-slate-300">${c.desc}</p>
-                    <div class="bg-soc-panel p-2 rounded text-xs text-soc-green border border-soc-border">
-                        <code>$ ${c.usage}</code>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function filterMemoCommands() {
-            const q = document.getElementById('memo-search').value.toLowerCase();
-            renderMemoCommands(memoCommands.filter(c => c.name.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q)));
-        }
-
-        function updateScoreCalc() {
-            const mission = parseInt(document.getElementById('sim-mission').value);
-            const docQual = parseInt(document.getElementById('sim-doc-quality').value);
-            document.getElementById('sim-mission-val').textContent = mission;
-
-            // Barème : Niveau 1 = 0/20, Niveau 21 = 20/20 (1 pt/niveau), Niveau 45 = deuxième 20/20 uniquement
-            let scoreProg = Math.max(0, Math.min(20, mission - 1));
-            let bonusText = "";
-
-            if (mission >= 45) {
-                bonusText = "+ 20/20 (2ème 20 DÉBLOQUÉ !)";
-            } else if (mission > 21) {
-                bonusText = `Progression bonus : niveau ${mission}/45 (2ème 20 au niv. 45)`;
-            }
-
-            let finalNote = Math.min(20, Math.max(0, scoreProg));
-            
-            document.getElementById('sim-final-note').textContent = `${finalNote} / 20`;
-            document.getElementById('sim-bonus-badge').textContent = bonusText;
-        }
-
-        function copyToClipboard(text) {
-            playSound('click');
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            const toast = document.createElement('div');
-            toast.className = "fixed bottom-5 right-5 bg-soc-green text-black px-4 py-2 rounded font-mono font-bold text-xs shadow-2xl z-50 flex items-center gap-2";
-            toast.innerHTML = `<i class="fa-solid fa-check"></i> Copié : ${text}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2000);
-        }
-
-        // Terminal Simulator Logic
-        const termOutput = document.getElementById('terminal-output');
-        const termInput = document.getElementById('terminal-input');
-        const termForm = document.getElementById('terminal-form');
-
-        termForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            playSound('click');
-            const raw = termInput.value.trim();
-            if (!raw) return;
-
-            appendTermLine(`userX@gameshell:~$ ${raw}`, "text-soc-cyan font-bold");
-            const cmd = raw.split(' ')[0].toLowerCase();
-
-            if (cmd === 'pwd') appendTermLine("/home/user25", "text-soc-green");
-            else if (cmd === 'ls') appendTermLine("README.txt   chateau   ordre_de_mission.txt", "text-slate-200");
-            else if (cmd === 'gsh') appendTermLine("[OK] Mission courante validée !", "text-soc-green font-bold");
-            else if (cmd === 'help') appendTermLine("Commandes reconnues dans le simulateur: pwd, ls, gsh, clear", "text-slate-400");
-            else if (cmd === 'clear') termOutput.innerHTML = '';
-            else appendTermLine(`bash: command not found: ${cmd}`, "text-soc-red");
-
-            termInput.value = '';
-            termOutput.scrollTop = termOutput.scrollHeight;
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMissions();
+            renderCheatSheet();
+            updateGradeCalc();
         });
-
-        function appendTermLine(txt, cls = "text-slate-300") {
-            const p = document.createElement('p');
-            p.className = cls;
-            p.textContent = txt;
-            termOutput.appendChild(p);
-        }
-
-        window.onload = function() {
-            renderLevels();
-            renderMemoCommands();
-            updateScoreCalc();
-        };
     </script>
 </body>
 </html>
